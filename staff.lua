@@ -1,4 +1,5 @@
 local staff = {
+	limit = 60,
 	timer = 0,
 	music = love.audio.newSource( "music/Juhani Junkala [Retro Game Music Pack] Level 3.ogg", "stream" ),
 	speed = 10,
@@ -51,11 +52,19 @@ for i = 1, 296 do
 	table.insert( staff.bg, c )
 end
 function staff:update( dt )
+	if self.speed == 40 then
+		self.limit = self.limit - dt
+	end
 	if not self.music:isPlaying() then self.music:play() end
 	self.timer = self.timer + dt
 	if self.timer > 60 then
 		self.music:stop()
-		title:switch()
+		if playerHasHiScore( hiscores, score ) then
+			scoreInput:switch()
+		else
+			title:switch()
+			resetEverything()
+		end
 	end
 	for _, line in pairs( self.list ) do
 		if line.y > -32 then
@@ -95,10 +104,19 @@ function staff:draw()
 	end
 end
 function staff:keypressed( key )
-	-- body
+	if key == input.a or key == input.b or key == input.c then
+		self.speed = self.speed * 4
+	elseif key == input.start then
+		self.timer = 60
+	end
+end
+function staff:keyreleased( key )
+	if key == input.a or key == input.b or key == input.c then
+		self.speed = self.speed / 4
+	end
 end
 function staff:switch( ... )
-	for _, entry in self.list do entry.y = entry.oy end
+	for _, entry in pairs( self.list ) do entry.y = entry.oy end
 	phase = self
 end
 return staff

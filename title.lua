@@ -132,13 +132,17 @@ function title:draw()
 	end
 end
 function title:keypressed( key )
-	if key == input.start and credits > 0 then
+	if key == input.start then
 		credits = credits - 1
 		self.anthem:stop()
+		if self.glitch.sound:isPlaying() then self.glitch.sound:stop() end
 		gameSelect:switch()
 	end
 end
 function title:switch()
+	self.glitch.index = 1
+	self.glitch.trigger = true
+	self.timer = 0
 	self.anthem:play()
 	phase = self
 end

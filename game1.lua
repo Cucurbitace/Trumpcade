@@ -1,5 +1,5 @@
 -- The wall, AKA game 1
-local bump = require( "bump" )
+local bump = require( "libs.bump" )
 local world = bump.newWorld( 16 )
 local game = {
 	stage = 0,
@@ -239,7 +239,7 @@ function game:draw()
 			y = y + 16
 		end
 	end
-	love.graphics.setColor( 255, 255, 255 )
+	printScore( score, fonts.basic )
 end
 function game:keypressed( key )
 	if key == "g" then self.showGrid = not self.showGrid end
@@ -252,7 +252,9 @@ function game:keypressed( key )
 		end
 	end
 end
+
 function game:switch()
+	currentGame = self
 	phase = self
 	self:set()
 end
@@ -281,8 +283,23 @@ function game:set()
 	end
 end
 function game:complete()
+	gameIsComplete[ 1 ] = true
+	if gameIsComplete[ 1 ] and gameIsComplete[ 2 ] and gameIsComplete[ 3 ] then
+		staff:switch()
+	else
+		print( gameIsComplete[ 1 ], gameIsComplete[ 2 ], gameIsComplete[ 3 ] )
+		gameSelect:setPointer()
+		gameSelect:switch()
+	end
 	-- body
 	-- Complete the game, cutscene, probably.
+end
+function game:continue()
+	phase = self
+	player.lives = 3
+end
+function game:reset()
+	self.stage = 0
 end
 player.anim:set( 7, 10, 0.11 )
 game:set() -- Temp for debug purpose

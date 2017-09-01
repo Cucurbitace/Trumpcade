@@ -1,4 +1,5 @@
 local hiscore = {}
+hiscore.timer = 60
 hiscore.bg = love.graphics.newImage( "graphics/bust.png" )
 hiscore.bigFont = love.graphics.newImageFont( "graphics/Big pixels font.png", "@ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÂ↑← !\"#$%&'()*+,-./0123456789:;<=>?" )
 hiscore.limit = 10
@@ -15,15 +16,30 @@ function hiscore:backspace()
 	self.name = self.name:sub( 1, #self.name - 1 )
 end
 function hiscore:validate()
-	-- body
+	if score > hiscores[ 1 ].value then
+		hiscores[ 1 ].value = score + love.math.random( 1, 1000 )
+	end
+	table.insert( hiscores, { name = self.name, value = score } )
+	table.sort( hiscores, function( v1, v2 ) return v1.value > v2.value end )
+
+	table.remove( hiscores, #hiscores )
+
+	resetEverything()
+	title:switch()
 end
 function hiscore:update( dt )
-	-- body
+	self.timer = self.timer - dt
+	if self.timer < 0 then
+		self:validate()
+	end
 end
 function hiscore:draw()
 	love.graphics.setColor( 255, 255, 255 )
 	love.graphics.draw( self.bg, 13, 0 )
 	love.graphics.setFont( self.bigFont )
+	love.graphics.printf( self.name, 0, 90, 224, "center" )
+	love.graphics.printf( score, 0, 40, 224, "center" )
+	love.graphics.printf( math.ceil( self.timer ), 0, 10, 224, "center" )
 	-- for _, input in pairs( self.inputs ) do
 	-- 	love.graphics.printf( input.char, input.x, input.y, 30, "center" )
 	-- end
@@ -49,7 +65,6 @@ function hiscore:draw()
 			love.graphics.print( element.letter, x, y, 0, scale )
 		end
 	end
-	love.graphics.print( self.letters[ self.position ] )
 end
 function hiscore:rotate( dir )
 	for i, e in pairs( self.wheel ) do
@@ -72,6 +87,18 @@ function hiscore:keypressed( key )
 		self:rotate( -1 )
 	elseif key == "right" then
 		self:rotate( 1 )
+	end
+	if key == input.a and #self.name < 16 then
+		local letter = self.letters[ self.position ]
+		if letter == "←" then
+			self:backspace()
+		else
+			self.name = self.name..letter
+		end
+	elseif key == input.b and #self.name > 0 then
+		self:backspace()
+	elseif key == input.start then
+		self:validate()
 	end
 	-- local input = self.inputs[ self.position ]
 	-- if key == "up" then
@@ -96,6 +123,18 @@ function hiscore:keypressed( key )
 	-- elseif key == "b" and #self.name > 0 then
 	-- 	self:backspace()
 	-- end
+end
+function hiscore:switch()
+	self.timer = 60
+	self.name = ""
+	self.limit = 10
+	self.position = 1
+	for i, letter in pairs( hiscore.letters ) do
+		local a = math.rad( i * 10 + 75 )
+		table.insert( hiscore.wheel, { letter = letter, x = 55 * math.cos( a ), y = 5 * math.sin( a ), angle = a } )
+	end
+	table.sort( hiscore.wheel, function( v1, v2 ) return v1.y < v2.y end )
+	phase = self
 end
 return hiscore
 
