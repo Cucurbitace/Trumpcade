@@ -51,4 +51,11 @@ function intro:draw()
 	love.graphics.draw( self.mask, 0, math.floor( self.y ) )
 	love.graphics.print( "@3-BIT 2017", 110, 300 )
 end
+function intro:switch()
+	self.index = 1
+	self.timer = 0
+	self.y = 0
+	if music then music:stop() end
+	phase = self
+end
 return intro

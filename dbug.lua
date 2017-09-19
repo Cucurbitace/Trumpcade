@@ -1,3 +1,4 @@
+-- Handle debug functions and display. To be removed from final build.
 local dbug = {}
 function dbug:update( dt )
 	-- body

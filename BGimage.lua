@@ -1,3 +1,4 @@
+-- Create a new Image that can be moved around. Like a BOB on Amiga.
 function newBGImage( fileName, x, y, show, hide, speed_x, speed_y )
 	local image = love.graphics.newImage( fileName )
 	local bg = { x = x, y = y }

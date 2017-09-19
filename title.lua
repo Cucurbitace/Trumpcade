@@ -73,7 +73,8 @@ function title:update( dt )
 		self.currentDemo = self.demos[ self.demoIndex ]
 		self.currentDemo:play()
 		if not self.currentDemo:isPlaying() then
-			self.anthem:play()
+			music:play()
+			--self.anthem:play()
 			self.currentDemo:pause()
 			self.currentDemo:rewind()
 			self.demoIndex = self.demoIndex + 1
@@ -134,7 +135,6 @@ end
 function title:keypressed( key )
 	if key == input.start then
 		credits = credits - 1
-		self.anthem:stop()
 		if self.glitch.sound:isPlaying() then self.glitch.sound:stop() end
 		gameSelect:switch()
 	end
@@ -143,7 +143,9 @@ function title:switch()
 	self.glitch.index = 1
 	self.glitch.trigger = true
 	self.timer = 0
-	self.anthem:play()
+	if music then music:stop() end
+	music = self.anthem
+	music:play()
 	phase = self
 end
 function title:setShader()

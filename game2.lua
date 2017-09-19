@@ -1,4 +1,4 @@
-require( "game1Data.player" )
+require( "game2Data.player" )
 function CheckCollision( x1, y1, w1, h1, x2, y2, w2, h2 )
   return x1 < x2+w2 and
          x2 < x1+w1 and
@@ -157,6 +157,7 @@ local function newLevel( game, map, size, sheet )
 	return level
 end
 local gamera = require( "libs.gamera" )
+local howToPlay = require( "game2Data.howToPlay" )
 local game = {
 	outroTimer = 0,
 	coolDown = 0,
@@ -230,12 +231,12 @@ game.decorations = {
 	love.graphics.newQuad( 16, 48, 16, 16, sw, sh ),
 	love.graphics.newQuad( 32, 48, 16, 16, sw, sh ),
 }
-game.cam:setWindow( 0, 0, 224, 320  )
+game.cam:setWindow( 0, 16, 224, 336  )
 game.level = newLevel( game, game.maps[ 1 ], game.size, game.sheet )
 
 
 game.enemies = {
-	newCharacter( game, 1, sw, sh, 128, 192, 224, 240, 40, 35, 434, 60, { frCount = 34, rFirst = 9, rLast = 12, lFirst = 5, lLast = 8, uFirst = 13, uLast = 16, dFirst = 1, dLast = 4 }, "sounds/wscream_2.wav" )	
+	newCharacter( game, 1, sw, sh, 128, 192, 224, 240, 40, 35, 434, 60, { frCount = 34, rFirst = 9, rLast = 12, lFirst = 5, lLast = 8, uFirst = 13, uLast = 16, dFirst = 1, dLast = 4 }, "sounds/wscream_2.wav", 93, 21, 7 ) -- 93 or 118 or 813 or 838 for patrolBlock	
 }
 
 local player = newCharacter( game, 0, sw, sh, 0, 192, 240, 384, 40, 32, 705, 75, { frCount = 34, rFirst = 5, rLast = 10, lFirst = 11, lLast = 16, uFirst = 29, uLast = 34, dFirst = 17, dLast = 22 }, "sounds/sfx_deathscream_human14.wav" )
@@ -251,79 +252,91 @@ function game:complete()
 	end
 end
 function game:update( dt )
-	self.level:update( dt )
-	self.globalTime = self.globalTime + dt
-	if music:isStopped() then music:play() end
-	if self.isOutro then
-		self.outroTimer = self.outroTimer + dt
-		if self.outroTimer > 10 then
-			self.outroTimer = 0
-			self:complete()
-		end
-	elseif self.level.count == 0 then
-		self.currentLevel = self.currentLevel + 1
-		if self.currentLevel > #self.maps then
-			self.isOutro = true
-		else
-			self.level = newLevel( self.maps[ currentLevel ], self.size, self.sheet )
-			player:reset()
-			self.intro.isActive = true
-		end
+	if howToPlay.isActive then
+		howToPlay:update( dt )
 	else
-		if self.intro.isActive then
-			self.intro.timer = self.intro.timer + dt
-			if self.intro.timer > 2 then
-				self.intro.timer = 0
-				self.intro.isActive = false
+		tweeter:update( dt )
+		self.level:update( dt )
+		self.globalTime = self.globalTime + dt
+		if music:isStopped() then music:play() end
+		if self.isOutro then
+			self.outroTimer = self.outroTimer + dt
+			if self.outroTimer > 10 then
+				self.outroTimer = 0
+				self:complete()
 			end
-		elseif player.isAlive then
-			player:update( dt )
-			for _, enemy in pairs( self.enemies ) do
-				enemy:update( dt )
-				if CheckCollision( enemy.x + 12, enemy.y + 12, 8, 8, player.x + 12, player.y + 12, 8, 8 ) and enemy.isAlive then
-					if player.power > 0 then
-						enemy.alpha = 100
-						enemy.isAlive = false
-						player.sayPussy:play()
-						enemy.scream:play()
-					else
-						player.scream:play()
-						player.isAlive = false
-						player:setAnimation( 23, 28, 0.35 )
-						self.coolDown = 1.5
+		elseif self.level.count == 0 then
+			self.currentLevel = self.currentLevel + 1
+			if self.currentLevel > #self.maps then
+				self.isOutro = true
+			else
+				self.level = newLevel( self.maps[ currentLevel ], self.size, self.sheet )
+				player:reset()
+				self.intro.isActive = true
+			end
+		else
+			if self.intro.isActive then
+				self.intro.timer = self.intro.timer + dt
+				if self.intro.timer > 2 then
+					self.intro.timer = 0
+					self.intro.isActive = false
+				end
+			elseif player.isAlive then
+				if not tweeter.isActive then
+					player:update( dt )
+				end
+				-- Collisions
+				for _, enemy in pairs( self.enemies ) do
+					enemy:update( dt )
+					if CheckCollision( enemy.x + 12, enemy.y + 12, 8, 8, player.x + 12, player.y + 12, 8, 8 ) and enemy.isAlive then
+						if player.power > 0 then
+							enemy.alpha = 100
+							enemy.isAlive = false
+							player.sayPussy:play()
+							enemy.scream:play()
+						else
+							player.scream:play()
+							player.isAlive = false
+							player:setAnimation( 23, 28, 0.35 )
+							self.coolDown = 1.5
+						end
 					end
 				end
-			end
-			self.coinTimer = self.coinTimer + dt
-			if self.coinTimer > 0.1 then
-				self.coinTimer = 0
-				self.coinIndex = self.coinIndex + 1
-				if self.coinIndex > 8 then self.coinIndex = 1 end
-			end
-			self.cam:setPosition( player.x - 16, player.y - 16 )
-		else
-			player:updateAnim( dt )
-			self.coolDown = self.coolDown - dt
-			if self.coolDown < 0 then
-				self.level:reset()
-				self.coolDown = 0
-				player:reset()
-				player.lives = player.lives - 1
-				if player.lives == 0 then
-					continue:switch()
+				self.coinTimer = self.coinTimer + dt
+				if self.coinTimer > 0.1 then
+					self.coinTimer = 0
+					self.coinIndex = self.coinIndex + 1
+					if self.coinIndex > 8 then self.coinIndex = 1 end
 				end
-				for _, enemy in pairs( self.enemies ) do
-					enemy:reset()
-				end
-				self.intro.isActive = true
 				self.cam:setPosition( player.x - 16, player.y - 16 )
+			else
+				player:updateAnim( dt )
+				self.coolDown = self.coolDown - dt
+				if self.coolDown < 0 then
+					tweeter:remove()
+					tweeter.isActive = false
+					self.level:reset()
+					self.coolDown = 0
+					player:reset()
+					player.lives = player.lives - 1
+					if player.lives == 0 then
+						continue:switch()
+					end
+					for _, enemy in pairs( self.enemies ) do
+						enemy:reset()
+					end
+					self.intro.isActive = true
+					self.cam:setPosition( player.x - 16, player.y - 16 )
+				end
 			end
 		end
 	end
 end
 
 function game:draw()
-	if self.isOutro then
+	if howToPlay.isActive then
+		howToPlay:draw( fonts.basic )
+	elseif self.isOutro then
 		love.graphics.printf( "Outro screen, to be replaced with artwork and so on.", 10, 10, 204, "center" )
 	else
 		self.cam:draw( function( l, t, w, h )
@@ -342,6 +355,7 @@ function game:draw()
 		love.graphics.rectangle( "fill", 154, 13, player.stamina, 8 )
 		love.graphics.setColor( 255, 255, 255 )
 		love.graphics.print( "STAMINA", 160, 4 )
+		-- HUD
 		if player.lives < 5 then
 			for i = 1, player.lives do
 				love.graphics.draw( self.sheet, self.heart, i * 9 - 5, 4 )
@@ -351,6 +365,7 @@ function game:draw()
 			love.graphics.setColor( 255, 255, 255 )
 			love.graphics.print( "x"..player.lives, 13, 4 )
 		end
+		tweeter:draw( player, fonts.tweeter, fonts.tiny )
 		if self.intro.isActive then
 			love.graphics.setColor( 255, 255, 0 )
 			love.graphics.printf( "Level "..self.currentLevel, 0, 118, 224, "center" )
@@ -367,32 +382,39 @@ function game:draw()
 end
 
 function game:keypressed( key )
+	if key == "k" then
+		player.lives = 1
+		player.isAlive = false
+	end
 	if self.isOutro then
 		if key == input.a or key == input.b or key == input.c then
 			self.outroTimer = 0
 			title:switch()
 		end
 	end
-	if key == "p" then
-		player.power = 10
-		reverseEnemies( self.enemies )
-	end
-	if key == "space" then
-		player.isRunning = true
-	end
-	if key == input.up then
-		player.nextMove = 1
-	elseif key == input.down then
-		player.nextMove = 2
-	elseif key == input.left then
-		player.nextMove = 3
-	elseif key == input.right then
-		player.nextMove = 4
+	if tweeter.isActive then
+		if key == input.a or key == input.b or key == input.c then
+			tweeter:type()
+		end
+	elseif not self.intro.isActive then
+		if key == input.a then player.isRunning = true end
+		if key == input.c then
+			tweeter:type( self.cam:toScreen( player.x, player.y ) )
+		end
+		if key == input.up then
+			player.nextMove = 1
+		elseif key == input.down then
+			player.nextMove = 2
+		elseif key == input.left then
+			player.nextMove = 3
+		elseif key == input.right then
+			player.nextMove = 4
+		end
 	end
 end
 
 function game:keyreleased( key )
-	if key == "space" then
+	if key == input.a then
 		player.isRunning = false
 	end
 end
@@ -405,6 +427,8 @@ function game:switch()
 	self.isOutro = false
 	currentGame = self
 	phase = self
+	if music then music:stop() end
+	music = self.music
 	player:reset()
 end
 function game:reset()

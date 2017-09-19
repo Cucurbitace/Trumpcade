@@ -1,50 +1,81 @@
--- The wall, AKA game 1
-local bump = require( "libs.bump" )
-local world = bump.newWorld( 16 )
+-- Move to main later
+local points = { data = {} }
+function points:update( dt )
+	for index, point in pairs( self.data ) do
+		point.alpha = point.alpha - dt * 400
+		point.y = point.y - dt * 20
+		if point.alpha < 0 then
+			table.remove( self.data, index )
+		end
+	end
+end
+function points:draw( font )
+	love.graphics.setFont( font )
+	for _, point in pairs( self.data ) do
+		love.graphics.setColor( 255, 255, 255, point.alpha )
+		love.graphics.print( point.value, point.x, point.y )
+	end
+	love.graphics.setColor( 255, 255, 255 )
+end
+function points:reset()
+	self.data = {}
+end
+function points:add( value, x, y )
+	table.insert( self.data, { value = value, x = x, y = y, alpha = 255 } )
+end
+
+
+
+-- Border Invaders, AKA game 1
 local game = {
+	timer = 0,
+	introIsActive = true,
+	sheet = love.graphics.newImage( "graphics/game1_sheet.png" ),
+	hostile_food = {},
+	fire_trigger = 99,
+	brickOnWall = 0,
 	stage = 0,
 	showGrid = false,
 	mexicans = love.graphics.newImage( "graphics/mexicans.png" ),
 	food = love.graphics.newImage( "graphics/foodtiles.png" ),
 	hamburger = love.graphics.newQuad( 32, 0, 8, 8, 80, 41 ),
+	lime = love.graphics.newQuad( 24, 56, 8, 8, 512, 512 ),
 	trump = love.graphics.newImage( "graphics/Trump_walk_spritesheet.png" ),
-	brick = love.graphics.newImage( "graphics/brick.png" ),
+	brick = {
+		image = love.graphics.newImage( "graphics/brick.png" ),
+		frames = {
+			love.graphics.newQuad( 0, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad( 16, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad( 32, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad( 48, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad( 64, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad( 80, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad( 96, 0, 16, 16, 128, 16 ),
+		},
+	},	
 	fc = math.rad( 360 ),
 	alpha = { value = 255, direction = -1 },
 	run_trigger = 160,
 }
 local wall = {
 	structure = {
-		{ x =   0, blocks = 3 },
-		{ x =  16, blocks = 0 },
-		{ x =  32, blocks = 0 },
-		{ x =  48, blocks = 0 },
-		{ x =  64, blocks = 0 },
-		{ x =  80, blocks = 0 },
-		{ x =  96, blocks = 0 },
-		{ x = 112, blocks = 0 },
-		{ x = 128, blocks = 0 },
-		{ x = 144, blocks = 0 },
-		{ x = 160, blocks = 0 },
-		{ x = 176, blocks = 0 },
-		{ x = 192, blocks = 0 },
-		{ x = 208, blocks = 3 },
+		{ x =   0, blocks = { 1, 1, 1 } },
+		{ x =  16, blocks = {} },
+		{ x =  32, blocks = {} },
+		{ x =  48, blocks = {} },
+		{ x =  64, blocks = {} },
+		{ x =  80, blocks = {} },
+		{ x =  96, blocks = {} },
+		{ x = 112, blocks = {} },
+		{ x = 128, blocks = {} },
+		{ x = 144, blocks = {} },
+		{ x = 160, blocks = {} },
+		{ x = 176, blocks = {} },
+		{ x = 192, blocks = {} },
+		{ x = 208, blocks = { 1, 1, 1 } },
 	},
 }
-local player = {
-	sounds = {
-		pick_brick = love.audio.newSource( "sounds/pick_brick.wav" ),
-		put_brick = love.audio.newSource( "sounds/put_brick.wav" ),
-		shoot_food = love.audio.newSource( "sounds/shoot_food.wav" )
-	},
-	position = 1,
-	hasBrick = false,
-	canShoot = true,
-	x = 100,
-	y = 280,
-	speed = 100,
-	anim = newAnimation( game.trump, 32, 32, 0.1, 10 )
-}
+local player = require( "game1Data.player" )
 local levels = {
 	{ name = "West Texas", speed = 10, bg = love.graphics.newImage( "graphics/texas1.png" ), wave = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 } },
 	{ name = "East Texas", speed = 12, bg = love.graphics.newImage( "graphics/texas2.png" ) },
@@ -70,103 +101,54 @@ local enemies = {
 }
 function wall:draw( y, brick )
 	for _, element in pairs( self.structure ) do
-		if element.blocks > 0 then
-			local count = math.ceil( element.blocks )
-			love.graphics.setColor( 255, 255, 255 )
-			for i = 1, count do
-				love.graphics.draw( brick, element.x, y - i * 8 )
+		if #element.blocks > 0 then
+			for index, block in pairs( element.blocks ) do
+				love.graphics.setColor( 255, 255, 255 )
+				love.graphics.draw( brick.image, brick.frames[ block ], element.x, y - index * 8 )
 			end
+			--love.graphics.rectangle( "line", element.x, 290 - 12 * #element.blocks, 16, 12 * #element.blocks )
 			love.graphics.setColor( 0, 0, 0, 64 )
-			love.graphics.rectangle( "fill", element.x, y + 8, 16, count * 4 )
+			love.graphics.rectangle( "fill", element.x, y + 8, 16, #element.blocks * 4 )
 		end
 	end
 	love.graphics.setColor( 255, 255, 255 )
 end
-function player:set()
-	love.graphics.setFont( fonts.dialog ) --Temp
-	self.lives = 3
-	self.score = 0
+function game:enemyShoot( x, y )
+	table.insert( self.hostile_food, { x = x, y = y, w = 4, h = 4, id = love.math.random( 3 ), angle = 0 } )
 end
-function player:move( dt, direction, first, last, pace )
-	if self.anim.first ~= first then
-		self.anim:set( first, last, pace )
-	end
-	self.direction = direction
-	self.x = self.x + dt * self.speed * direction
-	if self.x < 8 then
-		self.x = 8
-	elseif self.x > 216 then
-		self.x = 216
-	end
-	self.isMoving = true
-end
-function player:pickBrick()
-	if not self.hasBrick then
-		self.hasBrick = true
-		self.sounds.pick_brick:play()
-	end
-end
-function player:putBrick()
-	local section = wall.structure[ self.position ].blocks
-	if self.hasBrick and section < 3 then
-		wall.structure[ self.position ].blocks = section + 1
-		self.hasBrick = false
-		self.sounds.put_brick:play()
-	end
-end
-function player:shoot()
-	if self.canShoot and not self.hasBrick then
-		self.canShoot = false
-		self.bullet = { x = self.x, y = self.y, w = 8, h = 8, angle = 0 }
-		self.sounds.shoot_food:play()
-	end
-end
-function player:update( dt )
-	-- Bullet
-	if self.bullet then
-		self.bullet.angle = self.bullet.angle + dt * 10
-		if self.bullet.angle > game.fc then self.bullet.angle = self.bullet.angle - game.fc end
-		self.bullet.y = self.bullet.y - dt * 150
-		-- Check versus enemies
-		for index, enemy in pairs( game.wave ) do
-			if self.bullet.x > enemy.x and self.bullet.x + self.bullet.w < enemy.x + enemy.w and self.bullet.y > enemy.y and self.bullet.y + self.bullet.h < enemy.y + enemy.h then
-				self.bullet = nil
-				self.canShoot = true
-				table.remove( game.wave, index )
+function game:updateHostileFood( dt )
+	for index, food in pairs( self.hostile_food ) do
+		food.angle = food.angle + dt * 7
+		if food.angle > math.rad( 360 ) then food.angle = food.angle - math.rad( 360 ) end
+		food.y = food.y + dt * 60 * ( 1 + food.id / 6 )
+		if food.y > 320 then
+			table.remove( self.hostile_food, index )
+		elseif food.y > 260 then
+			for _, column in pairs( wall.structure ) do
+				if CheckCollision( column.x, 290 - 12 * #column.blocks, 16, 12 * #column.blocks, food.x, food.y, food.w, food.h ) and #column.blocks > 0 then
+					column.blocks[ #column.blocks ] = column.blocks[ #column.blocks ] + 1
+					if column.blocks[ #column.blocks ] > 5 then
+						table.remove( column.blocks, #column.blocks )
+					end
+					table.remove( self.hostile_food, index )
+				elseif CheckCollision( player.x - 8, player.y + 8, player.w, player.h, food.x, food.y, food.w, food.h ) then
+					player.isAlive = false
+					table.remove( self.hostile_food, index )
+				end
 			end
 		end
-		-- Remove bullet out of screen
-		if self.bullet.y < -8 then
-			self.bullet = nil
-			self.canShoot = true
-		end
 	end
-	-- Animation
-	self.anim:update( dt )
-	-- Movement
-	if love.keyboard.isDown( input.left ) then
-		self:move( dt, -1, 1, 6, 0.07 )
-	elseif love.keyboard.isDown( input.right ) then
-		self:move( dt, 1, 1, 6, 0.07 )
-	else
-		if self.anim.first ~= 7 then self.anim:set( 7, 10, 0.2 ) end
-		self.isMoving = false
-	end
-	self.position = math.ceil( self.x / 16 )
 end
-function player:draw()
-	if self.bullet then
-		if self.bullet.y > 44 then
-			love.graphics.setColor( 0, 0, 0, 64 )
-			love.graphics.draw( game.food, game.hamburger, self.bullet.x, self.bullet.y + 6, self.bullet.angle, 1, 1, 4, 4 )
-		end
+function game:drawHostileFood()
+	for _, food in pairs( self.hostile_food ) do
 		love.graphics.setColor( 255, 255, 255 )
-		love.graphics.draw( game.food, game.hamburger, self.bullet.x, self.bullet.y, self.bullet.angle, 1, 1, 4, 4 )
+		love.graphics.draw( self.sheet, self.lime, food.x + 2, food.y + 2, food.angle, 1, 1, 4, 4 )
+		love.graphics.setColor( 0, 0, 0, 64 )
+		love.graphics.draw( self.sheet, self.lime, food.x + 2, food.y + 6, food.angle, 1, 1, 4, 4 )
+		--love.graphics.rectangle( "line", food.x, food.y, food.w, food.h )
 	end
-	self.anim:draw( math.floor( self.x ), math.floor( self.y ), 0, self.direction, 1, 16 )
-	if self.hasBrick then love.graphics.draw( game.brick, self.x, self.y, 0, self.direction, 1, 8, -8 ) end	
 end
-function game:update( dt )
+function game:updateGetZone( dt )
 	self.alpha.value = self.alpha.value + dt * 700 * self.alpha.direction
 	if self.alpha.value > 255 then
 		self.alpha.value = 255
@@ -175,57 +157,126 @@ function game:update( dt )
 		self.alpha.value = 0
 		self.alpha.direction = 1
 	end
-	player:update( dt )
-	-- Enemies
+end
+function game:drawGetZone( x, y )
+	love.graphics.setColor( 0, 255, 255, self.alpha.value )
+	love.graphics.rectangle( "fill", x, y, 16, 32 )
+	love.graphics.rectangle( "fill", x, y, 16, 32 )
+	love.graphics.setColor( 255, 255, 255 )
+	love.graphics.printf( "G\nE\nT", x, y + 2, 16, "center" )
+end
+function game:updateEnemies( dt )
 	local dx = dt * self.speed * self.wave_direction
 	local dy = 0
 	local switch
-	self.wave_x = self.wave_x + dx
-	if self.wave_x > 40 then
-		self.wave_x = 40
-		self.wave_direction = -1
-		dy = 8
-		switch = true
-	elseif self.wave_x < 0 then
-		self.wave_x = 0
-		self.wave_direction = 1 
-		dy = 8
-		switch = true
+	-- Reverse wave direction
+	for _, enemy in pairs( self.wave ) do
+		if enemy.x > 200 then
+			switch = true
+			self.wave_direction = -1
+			dy = 8
+			break
+		elseif enemy.x < 16 then
+			self.wave_direction = 1
+			switch = true
+			dy = 8
+			break
+		end
 	end
+	-- Wave movement
 	for index, enemy in pairs( self.wave ) do
+		if not enemy.coolDown then enemy.coolDown = enemy.coolDownTrigger end
 		if enemy.isZoning then
+			enemy.coolDown = enemy.coolDown - dt
+			if enemy.coolDown < 0 then
+				enemy.coolDown = enemy.coolDownTrigger
+				if love.math.random( 100 ) > 95 and #self.hostile_food < 6 then
+					self:enemyShoot( enemy.x, enemy.y )
+				end
+			end
 			enemy.x = enemy.x + dx
-			if switch then enemy.x = math.floor( enemy.x ) end
+			if switch then
+				if self.wave_direction == -1 then
+					enemy.x = math.floor( enemy.x )
+				elseif self.wave_direction == 1 then
+					enemy.x = math.ceil( enemy.x )
+				end
+			end
 			enemy.y = enemy.y + dy
 			local block = math.floor( enemy.x / 16 )
 			local xl = block * 16
 			local xr = block * 16 + 12
 			if enemy.y > self.run_trigger then
 				for _, element in pairs( wall.structure ) do
-					if element.blocks == 0 and enemy.x > element.x and enemy.x < element.x + 12 then
+					if element.blocks == 0 and enemy.x > element.x and enemy.x < element.x + 4 then
 						enemy.isZoning = false
 					end
 				end
 			end
 		else
 			enemy.y = enemy.y + dt * self.speed * 5
+			if enemy.y > 320 then
+				table.remove( self.wave, index )
+			end
 		end
+	end
+end
+function game:drawEnemies()
+	for _, enemy in pairs( self.wave ) do
+		love.graphics.draw( self.mexicans, enemies[ enemy.quad ], enemy.x, enemy.y )
+		--love.graphics.rectangle( "line", enemy.x, enemy.y, enemy.w, enemy.h )
+		--love.graphics.print( enemy.block, enemy.x, enemy.y )
+	end
+end
+
+-- Global game functions
+function game:update( dt )
+	points:update( dt )
+	self:updateGetZone( dt )
+	-- Normal gameplay
+	if self.introIsActive then
+		self.timer = self.timer + dt
+		if self.timer > 2 then
+			self.timer = 0
+			self.introIsActive = false
+		end
+	elseif ( #self.wave > 0 or self.brickOnWall == 36 ) and player.isAlive then
+		self:updateHostileFood( dt )	
+		player:update( dt, self, points )
+
+		self:updateEnemies( dt )
+	elseif not player.isAlive then
+		self.timer = self.timer + dt
+		if self.timer > 2 then
+			self.timer = 0
+			self.hostile_food = {}
+			player.lives = player.lives - 1
+			if player.lives == 0 then
+				continue:switch()
+			else
+				player.isAlive = true
+			end
+		end
+	else -- Level complete
+
 	end
 end
 function game:draw()
 	love.graphics.draw( self.bg )
+	self:drawEnemies()
+	self:drawHostileFood()
 	wall:draw( 280, self.brick )
-	for _, enemy in pairs( self.wave ) do
-		--love.graphics.draw( self.mexicans, enemies[ enemy.quad ], enemy.x, enemy.y )
-		love.graphics.rectangle( "line", enemy.x, enemy.y, enemy.w, enemy.h )
-		love.graphics.print( enemy.block, enemy.x, enemy.y )
+	love.graphics.setFont( fonts.basic )
+	self:drawGetZone( 0, 288)
+	self:drawGetZone( 208, 288)
+	points:draw( fonts.score )
+	player:draw( self, points )
+	printScore( score, fonts.basic )
+	love.graphics.setColor( 255, 255, 0 )
+	if self.introIsActive then
+		love.graphics.printf( levels[ self.stage].name.."\nGet ready!", 0, 155, 224, "center" )
 	end
-	love.graphics.setColor( 0, 255, 255, self.alpha.value )
-	love.graphics.rectangle( "fill", 0, 288, 16, 32 )
-	love.graphics.rectangle( "fill", 208, 288, 16, 32 )
-	love.graphics.setColor( 255, 255, 255 )
-	love.graphics.printf( "G\nE\nT", 0, 290, 16, "center" )
-	player:draw()
+	-- Debug
 	love.graphics.setColor( 0, 255, 128, 160 )
 	local x, y = 16, 16
 	if self.showGrid then
@@ -239,26 +290,32 @@ function game:draw()
 			y = y + 16
 		end
 	end
-	printScore( score, fonts.basic )
+	love.graphics.setColor( 255, 255, 255 )
+	love.graphics.print( "Enemies bullet count: "..#self.hostile_food, 0, 30 )
 end
 function game:keypressed( key )
 	if key == "g" then self.showGrid = not self.showGrid end
-	if key == input.a then player:shoot() end
-	if key == input.b then
-		if player.x < 16 or player.x > 208 then
-			player:pickBrick()
-		else
-			player:putBrick()
+	if player.isAlive and not self.introIsActive then
+		if key == input.a then player:shoot() end
+		if key == input.b then
+			if player.x < 16 or player.x > 208 then
+				player:pickBrick( self )
+			else
+				player:putBrick( self, wall, points )
+			end
 		end
 	end
 end
 
+-- Modifier functions
 function game:switch()
+	if music then music:stop() end
 	currentGame = self
 	phase = self
 	self:set()
 end
 function game:set()
+	self.introIsActive = true
 	love.graphics.setFont( fonts.dialog )
 	self.stage = self.stage + 1
 	if self.stage > 5 then
@@ -272,8 +329,8 @@ function game:set()
 		self.bg = levels[ self.stage ].bg
 		local wave = levels[ self.stage ].wave
 		local x, y = 16, 64
-		for i = 1, #self.wave do
-			table.insert( self.wave, { quad = wave[ i ], hp = 0, x = x, y  = y, w = 10, h = 15, isZoning = true, block = 0 } )
+		for i = 1, #wave do
+			table.insert( self.wave, { quad = wave[ i ], hp = 0, x = x, y  = y, w = 10, h = 15, isZoning = true, block = 0, coolDownTrigger = love.math.random( 5 ) } )
 			x = x + 16
 			if i % 10 == 0 then
 				x = 16
@@ -287,7 +344,6 @@ function game:complete()
 	if gameIsComplete[ 1 ] and gameIsComplete[ 2 ] and gameIsComplete[ 3 ] then
 		staff:switch()
 	else
-		print( gameIsComplete[ 1 ], gameIsComplete[ 2 ], gameIsComplete[ 3 ] )
 		gameSelect:setPointer()
 		gameSelect:switch()
 	end
@@ -299,8 +355,10 @@ function game:continue()
 	player.lives = 3
 end
 function game:reset()
+	self.hostile_food = {}
+	self.fire_trigger = 999
 	self.stage = 0
 end
 player.anim:set( 7, 10, 0.11 )
-game:set() -- Temp for debug purpose
+--game:set() -- Temp for debug purpose when launching the game directly
 return game

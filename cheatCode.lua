@@ -1,3 +1,4 @@
+-- Creates a code in a the fashion of the Konami code.
 function newCheatCode( command, sequence, delay )
 	local timer, index = 0, 1
 	local code = {}

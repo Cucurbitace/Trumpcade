@@ -1,0 +1,13 @@
+exclude.list
+data
+.*
+raw*
+*.yaml
+*.txt
+*.bat
+*.db
+*.svg
+*.xcf
+*.psd
+*.exe
+*.zip

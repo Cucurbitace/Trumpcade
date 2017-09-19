@@ -1,3 +1,4 @@
+-- Credits of everybody involved with the project.
 local staff = {
 	limit = 60,
 	timer = 0,
@@ -31,6 +32,7 @@ local staff = {
 	},
 	bg = {}
 }
+-- Background animation
 local s = 0
 local dir = 1
 local x, y = 8, 8

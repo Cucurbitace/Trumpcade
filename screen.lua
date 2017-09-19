@@ -260,10 +260,12 @@ function screen:set( angle, scale )
 		self.ox, self.oy = 0, 0
 	end
 	love.window.setMode( w, h )
+	--print( w, h )
 	self.shader:send( "outputSize", { w * self.scale, h * self.scale } )
 	self.shader:send( "inputSize", { w , h } )
 	self.shader:send( "textureSize", { w , h } )
 	title:setShader()
+	--love.window.setFullscreen( true, "desktop" )
 end
 function screen:zoom( value )
 	local w, h = love.window.getDesktopDimensions()

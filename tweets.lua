@@ -34,11 +34,11 @@ return {
 		retweet = "2,020",
 		like = "2,049",
 	},
-	{
-		text = "",
-		date = "",
-		reply = "",
-		retweet = "",
-		like = "",
-	},
+	-- {
+	-- 	text = "",
+	-- 	date = "",
+	-- 	reply = "",
+	-- 	retweet = "",
+	-- 	like = "",
+	-- },
 }
