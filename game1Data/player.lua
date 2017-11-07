@@ -1,10 +1,5 @@
 local player = {
 	isAlive = true,
-	sounds = {
-		pick_brick = love.audio.newSource( "sounds/pick_brick.wav" ),
-		put_brick = love.audio.newSource( "sounds/put_brick.wav" ),
-		shoot_food = love.audio.newSource( "sounds/shoot_food.wav" )
-	},
 	position = 1,
 	hasBrick = false,
 	canShoot = true,
@@ -13,7 +8,6 @@ local player = {
 	w = 16,
 	h = 16,
 	speed = 100,
-	anim = newAnimation( love.graphics.newImage( "graphics/Trump_walk_spritesheet.png" ), 32, 32, 0.1, 10 )
 }
 function player:set()
 	self.lives = 3
@@ -35,7 +29,7 @@ end
 function player:pickBrick( game )
 	if not self.hasBrick and game.brickOnWall < 36 then
 		self.hasBrick = true
-		self.sounds.pick_brick:play()
+		sounds.pickBrick:play()
 	end
 end
 function player:putBrick( game, wall, points )
@@ -47,15 +41,15 @@ function player:putBrick( game, wall, points )
 		points:add( "+10", player.x - 10, player.y )
 		score = score + 10
 		self.hasBrick = false
-		self.sounds.put_brick:play()
+		sounds.putBrick:play()
 	end
 end
 function player:shoot()
 	if self.canShoot and not self.hasBrick then
 		self.canShoot = false
 		self.bullet = { x = self.x, y = self.y, w = 8, h = 8, angle = 0 }
-		if self.sounds.shoot_food:isPlaying() then self.sounds.shoot_food:stop() end
-		self.sounds.shoot_food:play()
+		if sounds.shootFood:isPlaying() then sounds.shootFood:stop() end
+		sounds.shootFood:play()
 	end
 end
 function player:update( dt, game, points )

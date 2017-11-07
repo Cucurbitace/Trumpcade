@@ -1,8 +1,8 @@
 loader = require( "libs.love-loader" )
 require( "libs.animator" )
-require( "cheatCode" )
-require( "speechBubble" )
-require( "BGimage" )
+require( "libs.cheatCode" )
+require( "libs.speechBubble" )
+require( "libs.BGimage" )
 
 -- Common functions -------------------------------------------------------------------------------
 function loadSettings( path )
@@ -13,7 +13,7 @@ function loadSettings( path )
 			table.insert( settings, tonumber( line ) )
 		end
 	else
-		settings = { 1, 1, 1 } -- Credits per coin, global speed, extra life schme.
+		settings = { 1, 1, 1, 1 } -- Credits per coin, global speed, extra life scheme, attract mode.
 		local file, errorstr = love.filesystem.newFile( path, "w" )
 		file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
 	end
@@ -58,8 +58,6 @@ end
 
 -- LÖVE functions ---------------------------------------------------------------------------------
 function love.load()
-	-- Global parameters
-	love.graphics.setDefaultFilter( "nearest", "nearest" )
 	-- Constants
 	creditsPerCoin = { 1, 2, 3, 4, 5 }
 	globalSpeed = { 1, 1.1, 1.2, 1.3, 1.4, 1.5 }
@@ -75,12 +73,33 @@ function love.load()
 	creditSound = love.audio.newSource( "sounds/sfx_coin_cluster3.wav" )
 	credits = 0
 	score = 0
-	-- Graphic data
 	initIsComplete = false
+	-- Graphic data
 	sheets = {}
-	loader.newImage( sheets, "trump", "graphics/sheet12.png" )
-	--trumpAnim = newAnimation( sheets.trump, 32, 32, 0.07, 38, 0, 192, 128, 320, 1, 6 )
+	loader.newImage( sheets, "trump", "graphics/trump.png" )
+	loader.newImage( sheets, "title", "graphics/title.png" )
+	loader.newImage( sheets, "select", "graphics/select.png" )
+	loader.newImage( sheets, "game2", "graphics/game2.png" )
+	-- Sound data
+	sounds = {}
+	loader.newSource( sounds, "glitch", "sounds/glitch.ogg" )
+	loader.newSource( sounds, "movePointer", "sounds/select_move.ogg" )
+	loader.newSource( sounds, "validate", "sounds/select_validate.ogg" )
+	loader.newSource( sounds, "pickupCoin", "sounds/coin.ogg" )
+	loader.newSource( sounds, "pickupPower", "sounds/Powerup7.wav" )
+	loader.newSource( sounds, "trumpDeath", "sounds/sfx_deathscream_human14.wav" )
+	loader.newSource( sounds, "sayPussy", "sounds/pussy.ogg" )
+	loader.newSource( sounds, "girlScream", "sounds/wscream_2.wav" )
+	loader.newSource( sounds, "pickBrick", "sounds/pick_brick.wav" )
+	loader.newSource( sounds, "putBrick", "sounds/put_brick.wav" )
+	loader.newSource( sounds, "shootFood", "sounds/shoot_food.wav" )
+	-- Music data
+	musics = {}
+	loader.newSource( musics, "anthem", "music/anthem.ogg", "stream" )
+	loader.newSource( musics, "select", "music/Do not move PSG.mp3", "stream" )
+	loader.newSource( musics, "whiteHouse", "music/Lunar.ogg", "stream" )
 	-- Code import
+	pause = require( "pause" )
 	dbug = require( "dbug" )
 	fonts = require( "fonts" )
 	input = require( "input" )
@@ -107,11 +126,15 @@ function love.load()
 	phase = intro
 	loader.start( function()
 		initIsComplete = true
-		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.07, 38, 0, 192, 128, 320, 1, 6 )
+		-- Animations are created here once the image are loaded.
+		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.1, 38, 0, 0, 128, 320, 1, 4 )
+		title.glitch.anim = newAnimation( sheets.title, 99, 16, 0.01, 6, 224, 320, 198, 48, 1, 6 )
+		gameSelect.coin = newAnimation( sheets.select, 32, 32, 0.05, 6, 0, 160, 192, 32, 1, 6 )
+		game2.coin = newAnimation( sheets.game2, 8, 10, 0.1, 8, 0, 512, 64, 10, 1, 8 )
 	end )
 end
 function love.update( dt )
-	if initIsComplete then
+	if initIsComplete and not pause.isActive then
 		dt = dt * globalSpeed[ settings[ 2 ] ] -- Global speed adjustment
 		phase:update( dt )
 	else
@@ -122,6 +145,7 @@ function love.draw()
 	love.graphics.setCanvas( screen.canvas )
 	love.graphics.clear()
 	phase:draw()
+	pause:draw()
 	love.graphics.setCanvas()
 	if isPCVersion then love.graphics.setShader( screen.shader ) end
 	love.graphics.draw( screen.canvas, 0, 0, screen.angle, screen.scale, screen.scale, screen.ox, screen.oy )
@@ -129,6 +153,7 @@ function love.draw()
 	love.graphics.setFont( fonts.debug )
 end
 function love.keypressed( key )
+	if key == "p" then pause:set( { sounds, musics } ) end
 	if key == "escape" then love.event.quit() end
 	if key == input.reset then resetEverything( true ) end
 	if key == input.setup and phase ~= seyup then setup:switch() end

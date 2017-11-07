@@ -5,6 +5,7 @@ local setup = {
 		{ info = "Credits/coin:", y = 64, source = { "1", "2", "3", "4", "5" }, index = settings[ 1 ] },
 		{ info = "Extra life:", y = 96, source = { "None", "At 500.000", "Every 100.000", "Every 200.000", "Every 500.000" }, index = settings[ 3 ] },
 		{ info = "Speed:", y = 128, source = { "100%", "110%", "120%", "130%", "140%", "150%" }, index = settings[ 2 ] },
+		{ info = "Attract mode:", y = 160, source = { "ON", "OFF" }, index = settings[ 4 ] },
 	},
 }
 function setup:update( dt )

@@ -309,6 +309,7 @@ end
 
 -- Modifier functions
 function game:switch()
+	player.anim = trumpAnim
 	if music then music:stop() end
 	currentGame = self
 	phase = self
@@ -359,6 +360,6 @@ function game:reset()
 	self.fire_trigger = 999
 	self.stage = 0
 end
-player.anim:set( 7, 10, 0.11 )
+--player.anim:set( 7, 10, 0.11 )
 --game:set() -- Temp for debug purpose when launching the game directly
 return game

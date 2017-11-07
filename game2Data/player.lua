@@ -1,15 +1,5 @@
-function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, destination, speed, animData, scream, patrolBlock, scatterTime, patrolTime )
+function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, speed, animData, patrolBlock, scatterTime, patrolTime )
 	local character = {}
-	function character:updateAnim( dt )
-		self.timer = self.timer + dt
-		if self.timer > self.pace then
-			self.timer = 0
-			self.index = self.index + 1
-			if self.index > self.lastFrame then
-				self.index = self.firstFrame
-			end
-		end
-	end
 	function character:setSpeed( s )
 		if self.baseSpeed then
 			self.baseSpeed = s
@@ -18,7 +8,7 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 		self.speed = s
 	end
 	local x, y = qx, qy
-	character.scream = love.audio.newSource( scream )
+	character.anim = anim
 	character.isAlive = true
 	if kind == 0 then -- character specific data
 		character.destination = destination
@@ -75,7 +65,6 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 	character.red, character.green, character.blue, character.alpha = 255, 255, 255, 255
 	character.operator = 1
 	character.power = 0
-	character.frames = {}
 	-- Animation
 	character.rFirst = animData.rFirst
 	character.rLast = animData.rLast
@@ -85,20 +74,6 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 	character.uLast = animData.uLast
 	character.dFirst = animData.dFirst
 	character.dLast = animData.dLast
-	for i = 1, animData.frCount do
-		local frame = love.graphics.newQuad( x, y, 32, 32, sw, sh )
-		table.insert( character.frames, frame )
-		x = x + 32
-		if i % 4 == 0 then
-			x = qx
-			y = y + 32
-		end
-	end
-	character.index = 1
-	character.firstFrame = 1
-	character.lastFrame = 4
-	character.timer = 0
-	character.pace = 0.1
 	-- Movement variables --
 	character.speed = speed
 	character.isOnSpot = true
@@ -194,7 +169,7 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 							elseif self.movingMode == "dead" then
 
 							end
-						else -- If there is onnly one move available
+						else -- If there is only one move available
 							self.nextMove = ways[ 1 ]
 						end
 					end
@@ -221,7 +196,7 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 				self.green, self.blue = 255, 255
 			end
 		end
-		self:updateAnim( dt )
+		self.anim:update( dt )
 		-- Movement
 		if not self.isOutOfBreath and self.delay == 0 then
 			if self.isOnSpot then
@@ -231,15 +206,15 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 					-- Object collection
 					if game.level.blocks[ self.position ].hasBonus then 
 						local block = game.level.blocks[ self.position ]
-						if game.pickupCoin:isPlaying() then game.pickupCoin:stop() end
-						game.pickupCoin:play()
+						if sounds.pickupCoin:isPlaying() then sounds.pickupCoin:stop() end
+						sounds.pickupCoin:play()
 						block.hasBonus = false
 						game.level.count = game.level.count - 1
 						score = score + 10
 						table.insert( game.level.points, { value = "+10", x = block.x, y = block.y - 8, alpha = 255 } )
 					elseif game.level.blocks[ self.position ].hasPower then
 						scareEnemies( game.enemies )
-						game.pickupPower:play()
+						sounds.pickupPower:play()
 						local block = game.level.blocks[ self.position ]
 						self.power = 5
 						self.green, self.blue = 0, 0
@@ -325,12 +300,12 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 			end
 			if self.x > 29 * game.size then
 				self.x = game.size
-				self.destination = 422
-				self.position = 421
+				self.destination = 452
+				self.position = 451
 			elseif self.x == game.size then
 				self.x = 29 * game.size
-				self.destination = 448
-				self.position = 449
+				self.destination = 478
+				self.position = 479
 			end
 		end
 	end
@@ -340,7 +315,8 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 		else
 			love.graphics.setColor( self.red, self.green, self.blue, self.alpha )
 		end
-		love.graphics.draw( texture, self.frames[ self.index ], math.floor( self.x ), math.floor( self.y ), 0, 1, 1, ox, oy )
+		self.anim:draw( math.floor( self.x ), math.floor( self.y ), 0, 1, 1, ox, oy )
+		--love.graphics.draw( texture, self.frames[ self.index ], math.floor( self.x ), math.floor( self.y ), 0, 1, 1, ox, oy )
 		--love.graphics.rectangle( "line", self.x, self.y, 32, 32 )
 	end
 	function character:move( dx, dy, destination )
@@ -373,11 +349,8 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 		self.destination, self.origin = self.origin, self.destination
 	end
 	function character:setAnimation( first, last, pace )
-		self.pace = pace or 0.1
-		if self.firstFrame ~= first and self.lastFrame ~= last then
-			self.index = first
-			self.firstFrame = first
-			self.lastFrame = last
+		if first ~= self.anim.first then
+			self.anim:set( first, last, pace )
 		end
 	end
 	function character:reset( full )
@@ -386,11 +359,6 @@ function newCharacter( game, kind, sw, sh, qx, qy, xstart, ystart, ox, oy, desti
 		self.red, self.green, self.blue = 255, 255, 255
 		self.operator = 1
 		self.power = 0
-		self.index = 1
-		self.firstFrame = 1
-		self.lastFrame = 4
-		self.timer = 0
-		self.pace = 0.1
 		self.isOnSpot = true
 		self.speed = self.baseSpeed or speed
 		self.xvel = 0

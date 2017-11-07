@@ -1,3 +1,4 @@
+love.graphics.setDefaultFilter( "nearest", "nearest" )
 local screen = {}
 screen.canvas = love.graphics.newCanvas( 224, 320 )
 screen.canvas:setFilter( "nearest", "nearest" )

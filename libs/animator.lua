@@ -16,7 +16,7 @@ function newAnimation( image, frameWidth, frameHeight, pace, framesCount, areaX,
 	for i = 1, framesCount do
 		table.insert( anim.frames, love.graphics.newQuad( x, y, frameWidth, frameHeight, sw, sh ) )
 		x = x + frameWidth
-		if x >= ( sw or areaWidth ) then
+		if x >= ( areaWidth or sw ) then
 			x = areaX or 0
 			y = y + frameHeight
 		end
@@ -24,6 +24,7 @@ function newAnimation( image, frameWidth, frameHeight, pace, framesCount, areaX,
 	return setmetatable( anim, animation )
 end
 function animation:update( dt )
+	--print( self.index, self.timer, self.pace )
 	self.timer = self.timer + dt
 	if self.timer > self.pace then
 		self.timer = 0

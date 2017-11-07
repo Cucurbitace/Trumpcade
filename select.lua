@@ -1,34 +1,18 @@
 -- Games selection screen. Secret code can be input here.
+local sw, sh = 448, 192
 local gameSelect = {
-	coin = {
-		image = love.graphics.newImage( "graphics/coin_rot_anim.png" ),
-		frames = {
-			love.graphics.newQuad( 0, 0, 32, 32, 192, 32 ),
-			love.graphics.newQuad( 32, 0, 32, 32, 192, 32 ),
-			love.graphics.newQuad( 64, 0, 32, 32, 192, 32 ),
-			love.graphics.newQuad( 96, 0, 32, 32, 192, 32 ),
-			love.graphics.newQuad( 128, 0, 32, 32, 192, 32 ),
-			love.graphics.newQuad( 160, 0, 32, 32, 192, 32 ),
-		},
-		index = 1,
-		timer = 0,
-	},
-	moveSound = love.audio.newSource( "sounds/select_move.ogg" ),
-	validateSound = love.audio.newSource( "sounds/select_validate.ogg"),
 	alpha = 255,
 	operator = -1,
 	timer = 30,
-	sheetLogos = love.graphics.newImage( "graphics/games_logo.png" ),
-	music = love.audio.newSource( "music/Do not move PSG.mp3" ),
 	logos = {
-		{ y = 32, selected = love.graphics.newQuad( 0, 0, 224, 64, 448, 160), greyedOut = love.graphics.newQuad( 224, 0, 224, 64, 448, 160 ), index = 0, h = 64 },
-		{ y = 96, selected = love.graphics.newQuad( 0, 64, 224, 64, 448, 160), greyedOut = love.graphics.newQuad( 224, 64, 224, 64, 448, 160 ), index = 1, h = 32 },
-		{ y = 128, selected = love.graphics.newQuad( 0, 96, 224, 64, 448, 160), greyedOut = love.graphics.newQuad( 224, 96, 224, 64, 448, 160 ), index = 2, h = 64 },
+		{ y = 32, selected = love.graphics.newQuad( 0, 0, 224, 64, sw, sh ), greyedOut = love.graphics.newQuad( 224, 0, 224, 64, sw, sh ), index = 0, h = 64 },
+		{ y = 96, selected = love.graphics.newQuad( 0, 64, 224, 64, sw, sh ), greyedOut = love.graphics.newQuad( 224, 64, 224, 64, sw, sh ), index = 1, h = 32 },
+		{ y = 128, selected = love.graphics.newQuad( 0, 96, 224, 64, sw, sh ), greyedOut = love.graphics.newQuad( 224, 96, 224, 64, sw, sh ), index = 2, h = 64 },
 		},
 	pointer = 0,
 	y = 32,
 	h = 64,
-	elements_count = 2, -- Base 0
+	elements_count = 2, -- First is 0
 	selector = { x = 12, y = 150, w = 200, h = 16 },
 	description = {
 		"You must stop the Bad Hombres to cross the border and invade the country. Build the wall and stop them with great American burgers while avoiding their nasty food.",
@@ -37,14 +21,7 @@ local gameSelect = {
 	}
 }
 function gameSelect:update( dt )
-	self.coin.timer = self.coin.timer + dt
-	if self.coin.timer > 0.05 then
-		self.coin.timer = 0
-		self.coin.index = self.coin.index + 1
-		if self.coin.index > 6 then
-			self.coin.index = 1
-		end
-	end
+	self.coin:update( dt )
 	self.alpha = self.alpha + dt * self.operator * 1000
 	if self.alpha > 255 then
 		self.alpha = 255
@@ -66,8 +43,8 @@ function gameSelect:draw()
 	love.graphics.setColor( self.alpha, 160, 13, self.alpha )
 	--love.graphics.rectangle( "fill", 0, self.logos[ self.pointer + 1 ].y, 224, self.logos[ self.pointer + 1 ].h )
 	love.graphics.setColor( 255, 255, 255 )
-	love.graphics.draw( self.coin.image, self.coin.frames[ self.coin.index ], -6, self.logos[ self.pointer + 1 ].y, 0, 1, 1, 0, -self.logos[ self.pointer + 1 ].h / 2 + 16 )
-	love.graphics.draw( self.coin.image, self.coin.frames[ self.coin.index ], 230, self.logos[ self.pointer + 1 ].y, 0, -1, 1, 0, -self.logos[ self.pointer + 1 ].h / 2 + 16 )
+	self.coin:draw( -6, self.logos[ self.pointer + 1 ].y, 0, 1, 1, 0, -self.logos[ self.pointer + 1 ].h / 2 + 16 )
+	self.coin:draw( 230, self.logos[ self.pointer + 1 ].y, 0, -1, 1, 0, -self.logos[ self.pointer + 1 ].h / 2 + 16 )
 	love.graphics.setColor( 255, 255, 255 )
 	for _, logo in pairs( self.logos ) do
 		local quad
@@ -76,7 +53,7 @@ function gameSelect:draw()
 		else
 			quad = logo.greyedOut
 		end
-		love.graphics.draw( self.sheetLogos, quad, 0, logo.y )
+		love.graphics.draw( sheets.select, quad, 0, logo.y )
 	end
 	--love.graphics.draw( self.wall_logo, 12, self.y )
 	--love.graphics.draw( self.g2_logo, 12, self.y + self.h )
@@ -94,23 +71,23 @@ function gameSelect:keypressed( key )
 	elseif key == input.down then
 		self:moveSelector( 1 )
 	elseif key == input.start then
-		self.validateSound:play()
+		sounds.validate:play()
 		if self.pointer == 0 then -- Game 1
-			self.music:stop()
+			musics.select:stop()
 			self:setPointer()
 			game1:switch()
 		elseif self.pointer == 1 then -- Game 2
-			self.music:stop()
+			musics.select:stop()
 			self:setPointer()
 			game2:switch()
 		elseif self.pointer == 2 then -- Game 3
-			self.music:stop()
+			musics.select:stop()
 			self:setPointer()
 			game3:switch()
 		end
 	elseif key == input.left or key == input.right or key == input.a or key == input.b then
-		if self.moveSound:isPlaying() then self.moveSound:stop() end
-		self.moveSound:play()
+		if sounds.movePointer:isPlaying() then sounds.movePointer:stop() end
+		sounds.movePointer:play()
 	end
 end
 function gameSelect:setPointer()
@@ -123,16 +100,15 @@ function gameSelect:setPointer()
 end
 function gameSelect:switch( reset )
 	if music then music:stop() end
-	music = self.music
+	music = musics.select
 	music:play()
 	if reset then self.pointer = 0 end
 	self.timer = 30
-	self.music:play()
 	phase = self
 end
 function gameSelect:moveSelector( direction )
-	if self.moveSound:isPlaying() then self.moveSound:stop() end
-	self.moveSound:play()
+	if sounds.movePointer:isPlaying() then sounds.movePointer:stop() end
+	sounds.movePointer:play()
 	local c = 0
 	for _, g in pairs( gameIsComplete ) do
 		if g then c = c + 1 end

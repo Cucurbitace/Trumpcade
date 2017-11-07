@@ -1,32 +1,22 @@
+-- Title and attract screen.
+local sw, sh = 608, 640 -- Width and height of title.png
 local title = {
 	demos = { love.graphics.newVideo( "videos/demo1.ogg", false ), love.graphics.newVideo( "videos/demo2.ogg", false ), love.graphics.newVideo( "videos/demo3.ogg", false ) },
 	demoIndex = 1,
-	eagle = love.graphics.newImage( "graphics/eagle.png" ),
-	logo = love.graphics.newImage( "graphics/title.png" ),
-	flag = love.graphics.newImage( "graphics/flag.png" ),
-	wdud = love.graphics.newImage( "graphics/wdud.png" ),
-	portrait = love.graphics.newImage( "graphics/portrait3.png" ),
+	eagle = love.graphics.newQuad( 224, 450, 180, 190, sw, sh ),
+	logo = love.graphics.newQuad( 224, 416, 160, 33, sw, sh ),
+	flag = love.graphics.newQuad( 0, 0, 608, 320, sw, sh ),
+	wdud = love.graphics.newQuad( 0, 320, 224, 320, sw, sh ),
+	portrait = love.graphics.newQuad( 410, 320, 198, 160, sw, sh ),
 	page = 1,
 	timer = 0,
-	anthem = love.audio.newSource( "music/anthem.ogg", "stream" ),
 	r = 255,
 	g = 0,
 	b = 0,
 }
 title.glitch = {
 	trigger = true,
-	sound = love.audio.newSource( "sounds/glitch.ogg" ),
 	timer = 0,
-	index = 1,
-	image = love.graphics.newImage( "graphics/glitch_fbi.png" ),
-	frames = {
-		love.graphics.newQuad( 0, 0, 96, 16, 99, 96 ),
-		love.graphics.newQuad( 0, 16, 96, 16, 99, 96 ),
-		love.graphics.newQuad( 0, 32, 96, 16, 99, 96 ),
-		love.graphics.newQuad( 0, 48, 96, 16, 99, 96 ),
-		love.graphics.newQuad( 0, 64, 96, 16, 99, 96 ),
-		love.graphics.newQuad( 0, 80, 96, 16, 99, 96 )
-	}
 }
 function title:colorCycle( dt, speed )
 	if self.r == 255 and self.g < 255 and self.b < 255 then
@@ -61,12 +51,14 @@ function title:update( dt )
 	if self.timer > 2 and self.timer < 3 then
 		if self.glitch.trigger then
 			self.glitch.trigger = false
-			self.glitch.sound:play()
+			if settings[ 4 ] == 1 then
+				sounds.glitch:play()
+			end
 		end
 		self.glitch.timer = self.glitch.timer + dt
 		if self.glitch.timer > 0.01 then
 			self.glitch.timer = 0
-			self.glitch.index = love.math.random( 2, 5 )
+			self.glitch.anim.index = love.math.random( 2, 5 )
 		end
 	elseif self.timer > 65.5 then
 		self.glitch.trigger = true
@@ -74,7 +66,6 @@ function title:update( dt )
 		self.currentDemo:play()
 		if not self.currentDemo:isPlaying() then
 			music:play()
-			--self.anthem:play()
 			self.currentDemo:pause()
 			self.currentDemo:rewind()
 			self.demoIndex = self.demoIndex + 1
@@ -82,10 +73,8 @@ function title:update( dt )
 			self.currentDemo = nil
 			self.timer = 0
 		end
-		-- Jump to demo
-		--self.timer = 5
 	elseif self.timer > 3 then
-		self.glitch.index = 6
+		self.glitch.anim.index = 6
 	end
 	if credits > 0 then
 		cheatCode:update( dt )
@@ -95,22 +84,22 @@ function title:draw()
 	if self.currentDemo then
 		love.graphics.draw( self.currentDemo, 224, 0, math.rad( 90 ) )
 	elseif self.timer < 5 then
-		love.graphics.draw( self.wdud )
-		love.graphics.draw( self.glitch.image, self.glitch.frames[ self.glitch.index ], 20, 240 )
+		love.graphics.draw( sheets.title, self.wdud, 0, 0 )
+		self.glitch.anim:draw( 20, 240 )
 	else
 		love.graphics.setShader( self.wave )
-		love.graphics.draw( self.flag, -30, 0 )
+		love.graphics.draw( sheets.title, self.flag, -90, 0 )
 		love.graphics.setShader()
-		love.graphics.draw( self.logo, 32, 32 )
+		love.graphics.draw( sheets.title, self.logo, 32, 32 )
 		love.graphics.setFont( fonts.basic )
 		love.graphics.setColor( self.r, self.g, self.b )
 		love.graphics.printf( "Make America Great Again", 0 , 72, 224, "center" )
 		love.graphics.setColor( 255, 255, 255 )
 		if math.floor( self.timer / 10 ) % 2 == 0 then
-			love.graphics.draw( self.portrait, 0, 161)
+			love.graphics.draw( sheets.title, self.portrait, 0, 161)
 		else
 			love.graphics.setColor( 255, 255, 255, 200 )	
-			love.graphics.draw( self.eagle, 20, 90 )
+			love.graphics.draw( sheets.title, self.eagle, 20, 90 )
 			love.graphics.setColor( 255, self.g, 0 )
 			love.graphics.printf( "--GREAT OF THE GREAT--", 0, 100, 224, "center" )
 			for i = 1, #hiscores do
@@ -135,7 +124,7 @@ end
 function title:keypressed( key )
 	if key == input.start then
 		credits = credits - 1
-		if self.glitch.sound:isPlaying() then self.glitch.sound:stop() end
+		if sounds.glitch:isPlaying() then sounds.glitch:stop() end
 		gameSelect:switch()
 	end
 end
@@ -144,7 +133,12 @@ function title:switch()
 	self.glitch.trigger = true
 	self.timer = 0
 	if music then music:stop() end
-	music = self.anthem
+	music = musics.anthem
+	if settings[ 4 ] == 1 then
+		music:setVolume( 1 )
+	else
+		music:setVolume( 0 )
+	end
 	music:play()
 	phase = self
 end
@@ -167,6 +161,6 @@ function title:setShader()
 	return color = texture2D(texture, 0.79*(uv + vec2(y+0.11, x+0.11)));
 	}]]
 	self.wave = love.graphics.newShader( shader )
-	self.wave:send( "inputSize", { 1, 1 } )
+	self.wave:send( "inputSize", { 1.1, 1.1 } )
 end
 return title

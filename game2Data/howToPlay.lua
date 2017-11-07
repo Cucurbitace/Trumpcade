@@ -1,6 +1,6 @@
 -- How to play for game 2
 local how = {
-	isActive = true,
+	isActive = false,
 	timer = 0,
 	length = 20,
 	text = {
