@@ -1,4 +1,17 @@
-local tweeter = { isActive = false, x = 20, y = 20, xMax = 60, yMax = 230, width = 160, height = 40, isFading = false, comboMultiplier = 1, comboBonus = 1000 }
+local tweeter = {
+	isActive = false,
+	x = 20,
+	y = 20,
+	xMax = 60,
+	yMax = 230,
+	width = 160,
+	height = 40,
+	isFading = false,
+	comboMultiplier = 1,
+	comboBonus = 1000,
+	isFirstTime = true,
+	firstTimeTimer = 0
+}
 tweeter.image = love.graphics.newImage( "graphics/tweet.png" )
 function tweeter:reset()
 	self.tweets = require( "tweets" )
@@ -49,7 +62,7 @@ function tweeter:update( dt )
 	end
 end
 function tweeter:remove()
-	table.remove( self.tweets, self.currentTweetIndex )
+	--table.remove( self.tweets, self.currentTweetIndex )
 end
 function tweeter:draw( player, mainFont, secondaryFont )
 	if self.isFading or self.isActive then

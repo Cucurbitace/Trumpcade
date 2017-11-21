@@ -249,7 +249,7 @@ vec4 effect(vec4 vcolor, Image texture, vec2 texCoord, vec2 pixel_coords)
 }
 ]]
 screen.shader = love.graphics.newShader( code )
-function screen:set( angle, scale )
+function screen:set( angle, scale, fullscreen )
 	local w, h
 	if angle then self.angle = math.rad( angle ) end
 	self.scale = scale or self.scale
@@ -266,7 +266,9 @@ function screen:set( angle, scale )
 	self.shader:send( "inputSize", { w , h } )
 	self.shader:send( "textureSize", { w , h } )
 	title:setShader()
-	--love.window.setFullscreen( true, "desktop" )
+	if fullscreen then
+		love.window.setFullscreen( true, "desktop" )
+	end
 end
 function screen:zoom( value )
 	local w, h = love.window.getDesktopDimensions()

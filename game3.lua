@@ -29,7 +29,8 @@ function game:draw()
 	end
 end
 function game:keypressed( key )
-	-- body
+	score = score + 5000
+	if key == input.b then self:complete() end
 end
 function game:switch()
 	currentGame = self

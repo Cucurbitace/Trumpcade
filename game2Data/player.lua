@@ -1,4 +1,4 @@
-function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, speed, animData, patrolBlock, scatterTime, patrolTime )
+function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, speed, animData, patrolBlock, scatterTime, patrolTime, target )
 	local character = {}
 	function character:setSpeed( s )
 		if self.baseSpeed then
@@ -32,8 +32,8 @@ function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, sp
 			self.movingMode = behaviour
 			if behaviour == "scatter" then
 				self.behaviourTimer = scatterTime
-				self.xTarget = player.x
-				self.yTarget = player.y
+				self.xTarget = target.x
+				self.yTarget = target.y
 			elseif behaviour == "patrol" then
 				self.xTarget = game.level.blocks[ patrolBlock ].x
 				self.yTarget = game.level.blocks[ patrolBlock ].y
@@ -57,8 +57,16 @@ function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, sp
 			character.destx = xstart + 16
 		elseif kind == 4 then
 			character.xvel = -speed
+			character.destination = destination + 1
+			character.position = destination
+			character.origin = destination
+			character.destx = xstart + 16
 		else
 			character.xvel = 0
+			character.destination = destination + 1
+			character.position = destination
+			character.origin = destination
+			character.destx = xstart + 16
 		end
 	end
 	-- Colours --
@@ -123,7 +131,7 @@ function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, sp
 			if self.delay > 0 then
 				self.delay = self.delay - dt
 			else -- Ghosts can move
-				--self.delay = 0
+				self.delay = 0
 				-- Alternate between moving modes
 				if self.movingMode == "scatter" or self.movingMode == "patrol" then
 					self.behaviourTimer = self.behaviourTimer - dt
@@ -226,16 +234,16 @@ function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, sp
 					end
 				end
 				-- Restrictions
-				if self.position == 434 then
+				if self.position == 464 then
 					self:move( 1, 0, 1 )
 					self:setAnimation( self.rFirst, self.rLast )
-				elseif self.position == 437 then
+				elseif self.position == 467 then
 					self:move( -1, 0, -1 )
 					self:setAnimation( self.lFirst, self.lLast )
-				elseif self.position == 375 or self.position == 376 or self.position == 405 or self.position == 406 or self.position == 435 or self.position == 436 then
+				elseif self.position == 465 or self.position == 466 or self.position == 405 or self.position == 406 or self.position == 435 or self.position == 436 then
 					self:move( 0, -1, -30 )
 					self:setAnimation( self.uFirst, self.uLast )
-				elseif kind > 0 and ( self.position == 345 or self.position == 346 ) then
+				elseif kind > 0 and ( self.position == 375 or self.position == 376 ) then
 					if self.movingMode == "scared" then
 						self:move( 0, 1, 30 )
 						self.nextMove = 1
@@ -250,6 +258,7 @@ function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, sp
 						self.nextMove = 4
 						self.forbiddenMove = 3
 					end
+					self:move( 1, 0, 1 )
 				elseif self.nextMove == 1 and game.level.blocks[ self.position - 30 ].isPath then
 					self:move( 0, -1, -30 )
 					self:setAnimation( self.uFirst, self.uLast )
@@ -309,15 +318,19 @@ function newCharacter( game, kind, anim, xstart, ystart, ox, oy, destination, sp
 			end
 		end
 	end
-	function character:draw( texture )
+	function character:draw()
 		if self.movingMode == "scared" then
 			love.graphics.setColor( 0, 32, 255, self.alpha )
 		else
 			love.graphics.setColor( self.red, self.green, self.blue, self.alpha )
 		end
 		self.anim:draw( math.floor( self.x ), math.floor( self.y ), 0, 1, 1, ox, oy )
+		--love.graphics.setFont( fonts.tiny )
+		--love.graphics.setColor( 0, 0, 0 )
+		--love.graphics.print( tostring( self.position ), self.x, self.y )
+		--love.graphics.print( tostring( self.destination ), self.x, self.y + 10 )
 		--love.graphics.draw( texture, self.frames[ self.index ], math.floor( self.x ), math.floor( self.y ), 0, 1, 1, ox, oy )
-		--love.graphics.rectangle( "line", self.x, self.y, 32, 32 )
+		--love.graphics.rectangle( "line", self.x, self.y, 16, 16 )
 	end
 	function character:move( dx, dy, destination )
 		if kind > 0 then

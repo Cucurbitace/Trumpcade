@@ -16,7 +16,7 @@ function newAnimation( image, frameWidth, frameHeight, pace, framesCount, areaX,
 	for i = 1, framesCount do
 		table.insert( anim.frames, love.graphics.newQuad( x, y, frameWidth, frameHeight, sw, sh ) )
 		x = x + frameWidth
-		if x >= ( areaWidth or sw ) then
+		if x >= ( ( areaX + areaWidth ) or sw ) then
 			x = areaX or 0
 			y = y + frameHeight
 		end

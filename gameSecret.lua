@@ -212,6 +212,7 @@ function game:draw()
 			bg:draw( self.timer )
 		end
 		--Dialogs
+		love.graphics.setFont( fonts.dialog )
 		for _, bubble in pairs( self.intro.bubbles ) do
 			bubble:draw( self.timer )
 		end
@@ -239,7 +240,8 @@ end
 function game:switch()
 	currentGame = self
 	phase = self
-	self.intro.music:play()
+	music = self.intro.music
+	music:play()
 end
 function game:reset()
 	self.timer = 0

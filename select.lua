@@ -32,6 +32,7 @@ function gameSelect:update( dt )
 	end
 	self.timer = self.timer - dt
 	if self.timer < 0 then
+		score = 0
 		self.timer = 0
 		gameOver:switch()
 	end

@@ -149,6 +149,7 @@ local function newLevel( game, map, size, sheet )
 		love.graphics.setColor( 255, 255, 255 )
 		love.graphics.draw( self.background )
 		for _, block in pairs( self.blocks ) do
+			love.graphics.setFont( fonts.tiny )
 			love.graphics.setColor( 255, 255, 255 )
 			if block.fancy then
 				love.graphics.draw( sheets.game2, game.decorations[ block.fancy ], block.x, block.y + 2 )
@@ -160,8 +161,8 @@ local function newLevel( game, map, size, sheet )
 			end
 			love.graphics.setFont( fonts.score )
 			for _, point in pairs( self.points ) do
-				love.graphics.setColor( 255, 255, 255, point.alpha )
-				love.graphics.print( point.value, point.x, point.y )
+				love.graphics.setColor( 255, 255, 255 )
+				love.graphics.print( point.value, math.floor( point.x ), math.floor( point.y ) )
 			end
 			-- Debug related
 			--love.graphics.setFont( fonts.tiny )
@@ -195,9 +196,9 @@ local game = {
 		love.graphics.newQuad( 32, 48, 16, 16, sw, sh ),
 	},
 }
--- game.enemies = {
--- 	--newCharacter( game, 1, sw, sh, 128, 192, 224, 240, 40, 35, 434, 60, { frCount = 34, rFirst = 9, rLast = 12, lFirst = 5, lLast = 8, uFirst = 13, uLast = 16, dFirst = 1, dLast = 4 }, "sounds/wscream_2.wav", 93, 21, 7 ) -- 93 or 118 or 813 or 838 for patrolBlock	
--- }
+game.enemies = {
+ 	--newCharacter( game, 1, game2.enemy1Animation, 128, 192, 224, 240, 40, 35, 434, 60, { frCount = 34, rFirst = 9, rLast = 12, lFirst = 5, lLast = 8, uFirst = 13, uLast = 16, dFirst = 1, dLast = 4 }, "sounds/wscream_2.wav", 93, 21, 7 ) -- 93 or 118 or 813 or 838 for patrolBlock	
+}
 local enemies = {
 	-- enemy1,
 	-- enemy2,
@@ -242,7 +243,7 @@ function game:update( dt )
 					player:update( dt )
 				end
 				-- Collisions
-				for _, enemy in pairs( enemies ) do
+				for _, enemy in pairs( self.enemies ) do
 					enemy:update( dt )
 					if CheckCollision( enemy.x + 12, enemy.y + 12, 8, 8, player.x + 12, player.y + 12, 8, 8 ) and enemy.isAlive then
 						if player.power > 0 then
@@ -262,7 +263,7 @@ function game:update( dt )
 				self.coin:update( dt )
 				self.cam:setPosition( player.x - 16, player.y - 16 )
 			else
-				player:updateAnim( dt )
+				player.anim:update( dt )
 				self.coolDown = self.coolDown - dt
 				if self.coolDown < 0 then
 					tweeter:remove()
@@ -274,7 +275,7 @@ function game:update( dt )
 					if player.lives == 0 then
 						continue:switch()
 					end
-					for _, enemy in pairs( enemies ) do
+					for _, enemy in pairs( self.enemies ) do
 						enemy:reset()
 					end
 					self.intro.isActive = true
@@ -289,17 +290,25 @@ function game:draw()
 	if howToPlay.isActive then
 		howToPlay:draw( fonts.basic )
 	elseif self.isOutro then
-		love.graphics.printf( "Outro screen, to be replaced with artwork and so on.", 10, 10, 204, "center" )
+		love.graphics.setFont( fonts.arcade )
+		love.graphics.printf( "You showed these females who is the man! But these bitches want to sue you. Fortunately you're the president, you're invicible!", 20, 20, 184, "center" )
 	else
+		love.graphics.setColor( 67, 58, 84 )
+		love.graphics.rectangle( "fill", 0, 0, 320, 320 )
+		love.graphics.setColor( 255, 255, 255 )
 		self.cam:draw( function( l, t, w, h )
 	  	-- draw camera stuff here
 			love.graphics.setColor( 255, 255, 255 )
 			self.level:draw()
 			if not self.isOver then
-				for _, enemy in pairs( enemies ) do
-					enemy:draw( sheets.game2 )
+				for _, enemy in pairs( self.enemies ) do
+					enemy:draw()
+					--love.graphics.draw( enemy.anim.image, enemy.anim.frames[ enemy.anim.index ], enemy.x, enemy.y, 0, 1, 1, 40, 35 )
+					--love.graphics.rectangle( "line", enemy.x, enemy.y, 16, 16 )
+					--love.graphics.setFont( fonts.debug )
+					--love.graphics.print( tostring( enemy.delay ), enemy.x, enemy.y, 0, 1, 1, 16, 16 )
 				end
-				player:draw( sheets.game2 )
+				player:draw()
 			end
 		end )
 		love.graphics.setFont( fonts.basic )
@@ -337,7 +346,7 @@ function game:keypressed( key )
 	if self.isOutro then
 		if key == input.a or key == input.b or key == input.c then
 			self.outroTimer = 0
-			title:switch()
+			gameSelect:switch()
 		end
 	end
 	if tweeter.isActive then
@@ -360,10 +369,10 @@ function game:keypressed( key )
 		end
 	end
 	-- Debug
-	if key == "k" then
-		player.lives = 1
-		player.isAlive = false
-	end
+	-- if key == "k" then
+	-- 	player.lives = 1
+	-- 	player.isAlive = false
+	-- end
 end
 
 function game:keyreleased( key )
@@ -391,6 +400,16 @@ function game:switch()
 	self.cam:setPosition( player.x - 16, player.y - 16 )
 	self.level = newLevel( game, game.maps[ 1 ], game.size, sheets.game2 )
 	player.anim = trumpAnim
+	self.enemies = {
+ 		newCharacter( game, 1, woman1Animation, 256, 256, 40, 35, 466, 35, { frCount = 69, rFirst = 15, rLast = 18, lFirst = 5, lLast = 8, uFirst = 9, uLast = 12, dFirst = 1, dLast = 4 }, 93, 21, 7, player ), -- 93 or 118 or 813 or 838 for patrolBlock	
+		newCharacter( game, 2, woman2Animation, 240, 256, 40, 35, 465, 35, { frCount = 69, rFirst = 15, rLast = 18, lFirst = 5, lLast = 8, uFirst = 9, uLast = 12, dFirst = 1, dLast = 4 }, 93, 21, 7, player ),
+		newCharacter( game, 3, woman3Animation, 224, 256, 40, 35, 464, 35, { frCount = 69, rFirst = 15, rLast = 18, lFirst = 5, lLast = 8, uFirst = 9, uLast = 12, dFirst = 1, dLast = 4 }, 93, 21, 7, player ),
+		newCharacter( game, 4, woman4Animation, 272, 256, 40, 35, 467, 35, { frCount = 69, rFirst = 15, rLast = 18, lFirst = 5, lLast = 8, uFirst = 9, uLast = 12, dFirst = 1, dLast = 4 }, 93, 21, 7, player ),
+	}
+	self.enemies[ 1 ].scream = love.audio.newSource( "sounds/wscream_2.wav" )
+	self.enemies[ 2 ].scream = love.audio.newSource( "sounds/wscream_2.wav" )
+	self.enemies[ 3 ].scream = love.audio.newSource( "sounds/wscream_2.wav" )
+	self.enemies[ 4 ].scream = love.audio.newSource( "sounds/wscream_2.wav" )
 	self.isOutro = false
 	currentGame = self
 	phase = self
@@ -398,8 +417,12 @@ function game:switch()
 	music = musics.whiteHouse
 	player:reset()
 end
+function game:resetEnemies()
+	for _, enemy in pairs( self.enemies ) do
+		enemy:reset()
+	end
+end
 function game:reset()
-	player:reset()
 	self.currentLevel = 1
 end
 return game

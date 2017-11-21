@@ -1,3 +1,4 @@
+score = 0
 loader = require( "libs.love-loader" )
 require( "libs.animator" )
 require( "libs.cheatCode" )
@@ -13,9 +14,10 @@ function loadSettings( path )
 			table.insert( settings, tonumber( line ) )
 		end
 	else
-		settings = { 1, 1, 1, 1 } -- Credits per coin, global speed, extra life scheme, attract mode.
+		settings = { 1, 1, 1, 2 } -- Credits per coin, global speed, extra life scheme, attract mode.
 		local file, errorstr = love.filesystem.newFile( path, "w" )
 		file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
+		settings = { 1, 1, 1, 2 }
 	end
 	return settings
 end
@@ -34,13 +36,17 @@ function playerHasHiScore( hiscores, score )
 	end
 end
 function goToSecretLevel()
-	gameSelect.music:stop()
+	music:stop()
 	gameSecret:switch()
 end
 function resetEverything( hard )
+	score = 0
+	gameIsComplete = { false, false, false }
+	tweeter:reset()
 	game1:reset()
 	game2:reset()
 	game3:reset()
+	gameSecret:reset()
 	if hard then intro:switch() end
 end
 function printTimer( timer, font )
@@ -72,7 +78,6 @@ function love.load()
 	gameIsComplete = { false, false, false }
 	creditSound = love.audio.newSource( "sounds/sfx_coin_cluster3.wav" )
 	credits = 0
-	score = 0
 	initIsComplete = false
 	-- Graphic data
 	sheets = {}
@@ -80,6 +85,7 @@ function love.load()
 	loader.newImage( sheets, "title", "graphics/title.png" )
 	loader.newImage( sheets, "select", "graphics/select.png" )
 	loader.newImage( sheets, "game2", "graphics/game2.png" )
+	--loader.newImage( sheets, "game1", "graphics/game1.png" )
 	-- Sound data
 	sounds = {}
 	loader.newSource( sounds, "glitch", "sounds/glitch.ogg" )
@@ -121,15 +127,21 @@ function love.load()
 	staff = require( "staff" )
 	setup = require( "setup" )
 	-- Init
-	screen:set( 0, 2 ) -- Set to 90, 1 for cabinet build
+	screen:set( 90, 1, true ) -- Set to 90, 1, true for cabinet build
+	--screen:set( 0, 2 )
+	love.mouse.setVisible( false )
 	currentGame = game1
 	phase = intro
 	loader.start( function()
 		initIsComplete = true
 		-- Animations are created here once the image are loaded.
 		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.1, 38, 0, 0, 128, 320, 1, 4 )
-		title.glitch.anim = newAnimation( sheets.title, 99, 16, 0.01, 6, 224, 320, 198, 48, 1, 6 )
+		title.glitch.anim = newAnimation( sheets.title, 99, 16, 0.01, 6, 224, 320, 99, 95, 1, 6 )
 		gameSelect.coin = newAnimation( sheets.select, 32, 32, 0.05, 6, 0, 160, 192, 32, 1, 6 )
+		woman1Animation = newAnimation( sheets.game2, 32, 32, 0.1, 69, 128, 192, 128, 288, 1, 4 )
+		woman2Animation = newAnimation( sheets.game2, 32, 32, 0.1, 69, 128, 192, 128, 288, 1, 4 )
+		woman3Animation = newAnimation( sheets.game2, 32, 32, 0.1, 69, 128, 192, 128, 288, 1, 4 )
+		woman4Animation = newAnimation( sheets.game2, 32, 32, 0.1, 69, 128, 192, 128, 288, 1, 4 )
 		game2.coin = newAnimation( sheets.game2, 8, 10, 0.1, 8, 0, 512, 64, 10, 1, 8 )
 	end )
 end
@@ -139,6 +151,11 @@ function love.update( dt )
 		phase:update( dt )
 	else
 		loader:update( dt )
+	end
+	if love.keyboard.isDown( input.start ) and love.keyboard.isDown( input.up ) and phase ~= intro then
+		--setup:switch()
+	elseif love.keyboard.isDown( input.start ) and love.keyboard.isDown( input.down ) and phase ~= intro then
+		resetEverything( true )
 	end
 end
 function love.draw()
@@ -163,6 +180,7 @@ function love.keypressed( key )
 		credits = credits + creditsPerCoin[ settings[ 1 ] ]
 	end
 	if phase.keypressed then phase:keypressed( key ) end
-	dbug:keypressed( key )
+	--dbug:keypressed( key )
+	if key == "h" then phase:complete() end
 end
 function love.keyreleased( key ) if phase.keyreleased then phase:keyreleased( key ) end end

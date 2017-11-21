@@ -8,6 +8,7 @@ local setup = {
 		{ info = "Attract mode:", y = 160, source = { "ON", "OFF" }, index = settings[ 4 ] },
 	},
 }
+
 function setup:update( dt )
 	-- body
 end
@@ -48,12 +49,21 @@ function setup:switch()
 	cursor = 1
 end
 function setup:writeOption()
+	-- à refaire, c'est de la merde.
 	for i = 1, #self.menu do
 		settings[ i ] = self.menu[ i ].index 
 	end
 	love.filesystem.remove( "data" )
 	local file, errorstr = love.filesystem.newFile( "data", "w" )
-	file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
+	local output = ""
+	for index, value in pairs( settings ) do
+		if index < #settings then
+			output = output..tostring( value ).."\n"
+		else
+			output = output..tostring( value )
+		end
+	end
+	file:write( output )
 end
 function setup:moveCursor( direction )
 	self.cursor = self.cursor + direction

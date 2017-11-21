@@ -15,7 +15,7 @@ local staff = {
 			* names and header = 30
 			* next section = 50
 		]]
-		{ image = love.graphics.newImage( "graphics/title.png" ), oy = 320, y = 320, x = 35 },
+		{ image = love.graphics.newImage( "graphics/logo.png" ), oy = 320, y = 320, x = 35 },
 		{ text = "A great game by", oy = 360, y = 360, font = "body" },
 		{ image = love.graphics.newImage( "graphics/3bit_logo.png"), oy = 375, y = 375, x = 62 },
 		{ text = "Code", oy = 430, y = 430, font = "header" },
@@ -118,6 +118,7 @@ function staff:keyreleased( key )
 	end
 end
 function staff:switch( ... )
+	if music then music:stop() end
 	for _, entry in pairs( self.list ) do entry.y = entry.oy end
 	phase = self
 end

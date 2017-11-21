@@ -25,6 +25,7 @@ function gameOver:update( dt )
 		self.loserSound:play()
 	elseif self.timer > 10 then
 		title:switch()
+		resetEverything( true )
 	end
 end
 function gameOver:draw()
@@ -36,6 +37,7 @@ end
 function gameOver:keypressed( key )
 	if key == input.start or key == input.a or key == input.b or key == input.c then
 		title:switch()
+		resetEverything( true )
 	end
 end
 function gameOver:switch()

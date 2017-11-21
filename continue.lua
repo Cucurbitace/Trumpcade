@@ -119,7 +119,7 @@ function trump:update( dt )
 end
 function trump:draw()
 	love.graphics.draw( self.sweat, self.x, self.y - 11 )
-	love.graphics.draw( game2.sheet, self.frames[ self.index ], self.x, self.y, 0, self.direction, 1, 16, 16 )
+	love.graphics.draw( sheets.game2, self.frames[ self.index ], self.x, self.y, 0, self.direction, 1, 16, 16 )
 end
 -- Main functions ---------------------------------------------------------------------------------
 function continue:update( dt )

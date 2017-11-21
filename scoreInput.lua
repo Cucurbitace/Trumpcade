@@ -83,9 +83,9 @@ function hiscore:rotate( dir )
 	if self.position < 1 then self.position = #self.letters elseif self.position > #self.letters then self.position = 1 end
 end
 function hiscore:keypressed( key )
-	if key == "left" then
+	if key == input.left then
 		self:rotate( -1 )
-	elseif key == "right" then
+	elseif key == input.right then
 		self:rotate( 1 )
 	end
 	if key == input.a and #self.name < 16 then

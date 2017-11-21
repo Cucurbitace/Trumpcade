@@ -100,7 +100,7 @@ function player:draw( game, points )
 		love.graphics.draw( game.food, game.hamburger, self.bullet.x, self.bullet.y, self.bullet.angle, 1, 1, 4, 4 )
 	end
 	self.anim:draw( math.floor( self.x ), math.floor( self.y ), 0, self.direction, 1, 16 )
-	if self.hasBrick then love.graphics.draw( game.brick.image, game.brick.frames[ 1 ], self.x, self.y, 0, self.direction, 1, 8, -8 ) end
-	love.graphics.rectangle( "line", self.x - 8, self.y + 8, self.w, self.h )
+	if self.hasBrick then love.graphics.draw( game1.bricks, game.brick.frames[ 1 ], self.x, self.y, 0, self.direction, 1, 8, -8 ) end
+	--love.graphics.rectangle( "line", self.x - 8, self.y + 8, self.w, self.h )
 end
 return player

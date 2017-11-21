@@ -71,6 +71,7 @@ function title:update( dt )
 			self.demoIndex = self.demoIndex + 1
 			if self.demoIndex > 3 then self.demoIndex = 1 end
 			self.currentDemo = nil
+			self.glitch.index = 1
 			self.timer = 0
 		end
 	elseif self.timer > 3 then
@@ -118,14 +119,14 @@ function title:draw()
 		else
 			invite = "CREDITS: "..credits.."\nPRESS START"
 		end
-		love.graphics.print( invite, 4, 300 )
+		love.graphics.print( invite, 8, 300 )
 	end
 end
 function title:keypressed( key )
-	if key == input.start then
+	if key == input.start and credits > 0 then
 		credits = credits - 1
 		if sounds.glitch:isPlaying() then sounds.glitch:stop() end
-		gameSelect:switch()
+		gameSelect:switch( true )
 	end
 end
 function title:switch()
