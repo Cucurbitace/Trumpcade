@@ -39,7 +39,8 @@ function intro:update( dt )
 		self.index = self.index + 1
 		if self.index > #self.text then
 			self.index = #self.text
-			title:switch()
+			--title:switch()
+			switchTo( title, true )
 		end
 	end
 end

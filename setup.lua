@@ -40,7 +40,8 @@ function setup:keypressed( key )
 		self:moveOption( 1 )
 	elseif key == input.start then
 		self:writeOption()
-		intro:switch()
+		--intro:switch()
+		switchTo( intro )
 	end
 end
 function setup:switch()
@@ -48,8 +49,7 @@ function setup:switch()
 	phase = self
 	cursor = 1
 end
-function setup:writeOption()
-	-- à refaire, c'est de la merde.
+function setup:writeOption( settings )
 	for i = 1, #self.menu do
 		settings[ i ] = self.menu[ i ].index 
 	end
@@ -64,6 +64,21 @@ function setup:writeOption()
 		end
 	end
 	file:write( output )
+end
+function setup:loadOption()
+	local settings
+	if love.filesystem.exists( path ) then
+		settings = {}
+		for line in love.filesystem.lines( path ) do
+			table.insert( settings, tonumber( line ) )
+		end
+	else
+		settings = { 1, 1, 1, 2 } -- Credits per coin, global speed, extra life scheme, attract mode.
+		local file, errorstr = love.filesystem.newFile( path, "w" )
+		self:writeOption( settings )
+		--file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
+	end
+	return settings
 end
 function setup:moveCursor( direction )
 	self.cursor = self.cursor + direction

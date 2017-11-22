@@ -252,7 +252,8 @@ function game:update( dt )
 			self.hostile_food = {}
 			player.lives = player.lives - 1
 			if player.lives == 0 then
-				continue:switch()
+				switchTo( continue )
+				--continue:switch()
 			else
 				player.isAlive = true
 			end
@@ -377,10 +378,12 @@ end
 function game:complete()
 	gameIsComplete[ 1 ] = true
 	if gameIsComplete[ 1 ] and gameIsComplete[ 2 ] and gameIsComplete[ 3 ] then
-		staff:switch()
+		switchTo( staff )
+		--staff:switch()
 	else
 		gameSelect:setPointer()
-		gameSelect:switch()
+		switchTo( gameSelect )
+		--gameSelect:switch()
 	end
 	-- Complete the game, cutscene, probably.
 end

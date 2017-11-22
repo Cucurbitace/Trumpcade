@@ -273,7 +273,8 @@ function game:update( dt )
 					player:reset()
 					player.lives = player.lives - 1
 					if player.lives == 0 then
-						continue:switch()
+						--continue:switch()
+						switchTo( continue, true )
 					end
 					for _, enemy in pairs( self.enemies ) do
 						enemy:reset()
@@ -346,7 +347,8 @@ function game:keypressed( key )
 	if self.isOutro then
 		if key == input.a or key == input.b or key == input.c then
 			self.outroTimer = 0
-			gameSelect:switch()
+			switchTo( gameSelect, true )
+			--gameSelect:switch()
 		end
 	end
 	if tweeter.isActive then
@@ -385,10 +387,12 @@ end
 function game:complete()
 	gameIsComplete[ 2 ] = true
 	if gameIsComplete[ 1 ] and gameIsComplete[ 2 ] and gameIsComplete[ 3 ] then
-		staff:switch()
+		switchTo( staff, true )
+		--staff:switch()
 	else
 		gameSelect:setPointer()
-		gameSelect:switch()
+		switchTo( gameSelect, true )
+		--gameSelect:switch()
 	end
 end
 function game:continue()

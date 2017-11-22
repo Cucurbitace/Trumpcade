@@ -34,7 +34,8 @@ function gameSelect:update( dt )
 	if self.timer < 0 then
 		score = 0
 		self.timer = 0
-		gameOver:switch()
+		--gameOver:switch()
+		switchTo( gameOver, true  )
 	end
 	cheatCode:update( dt, gameSecret.isComplete )
 end
@@ -76,15 +77,18 @@ function gameSelect:keypressed( key )
 		if self.pointer == 0 then -- Game 1
 			musics.select:stop()
 			self:setPointer()
-			game1:switch()
+			--game1:switch()
+			switchTo( game1, true )
 		elseif self.pointer == 1 then -- Game 2
 			musics.select:stop()
 			self:setPointer()
-			game2:switch()
+			--game2:switch()
+			switchTo( game2, true )
 		elseif self.pointer == 2 then -- Game 3
 			musics.select:stop()
 			self:setPointer()
-			game3:switch()
+			--game3:switch()
+			switchTo( game3 )
 		end
 	elseif key == input.left or key == input.right or key == input.a or key == input.b then
 		if sounds.movePointer:isPlaying() then sounds.movePointer:stop() end

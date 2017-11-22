@@ -39,10 +39,12 @@ end
 function game:complete()
 	gameIsComplete[ 3 ] = true
 	if gameIsComplete[ 1 ] and gameIsComplete[ 2 ] and gameIsComplete[ 3 ] then
-		staff:switch()
+		--staff:switch()
+		switchTo( staff, true )
 	else
 		gameSelect:setPointer()
-		gameSelect:switch()
+		--gameSelect:switch()
+		switchTo( gameSelect, true )
 	end
 end
 function game:reset()

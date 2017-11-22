@@ -126,7 +126,8 @@ function title:keypressed( key )
 	if key == input.start and credits > 0 then
 		credits = credits - 1
 		if sounds.glitch:isPlaying() then sounds.glitch:stop() end
-		gameSelect:switch( true )
+		--gameSelect:switch( true )
+		switchTo( gameSelect, true, true )
 	end
 end
 function title:switch()

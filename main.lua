@@ -1,10 +1,11 @@
 score = 0
 loader = require( "libs.love-loader" )
+require( "libs.arcade" )
 require( "libs.animator" )
 require( "libs.cheatCode" )
 require( "libs.speechBubble" )
 require( "libs.BGimage" )
-
+local version = 0.3.4
 -- Common functions -------------------------------------------------------------------------------
 function loadSettings( path )
 	local settings
@@ -16,8 +17,7 @@ function loadSettings( path )
 	else
 		settings = { 1, 1, 1, 2 } -- Credits per coin, global speed, extra life scheme, attract mode.
 		local file, errorstr = love.filesystem.newFile( path, "w" )
-		file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
-		settings = { 1, 1, 1, 2 }
+		--file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
 	end
 	return settings
 end
@@ -37,7 +37,8 @@ function playerHasHiScore( hiscores, score )
 end
 function goToSecretLevel()
 	music:stop()
-	gameSecret:switch()
+	--gameSecret:switch()
+	switchTo( gameSecret, true )
 end
 function resetEverything( hard )
 	score = 0
@@ -47,7 +48,10 @@ function resetEverything( hard )
 	game2:reset()
 	game3:reset()
 	gameSecret:reset()
-	if hard then intro:switch() end
+	if hard then
+		--intro:switch()
+		switchTo( intro )
+	end
 end
 function printTimer( timer, font )
 	local s = size or 1
@@ -60,6 +64,14 @@ function printScore( score, font )
 	love.graphics.setColor( 255, 255, 255 )
 	love.graphics.printf( "SCORE", 0, 4, 224, "center" )
 	love.graphics.printf( score, 0, 14, 224, "center" )
+end
+function switchTo( target, showTransition, param )
+	if showTransition then
+		transition.isActive = true
+		transition:set( target, param )
+	else
+		target:switch( param )
+	end
 end
 
 -- LÖVE functions ---------------------------------------------------------------------------------
@@ -105,6 +117,7 @@ function love.load()
 	loader.newSource( musics, "select", "music/Do not move PSG.mp3", "stream" )
 	loader.newSource( musics, "whiteHouse", "music/Lunar.ogg", "stream" )
 	-- Code import
+	transition = require( "transition" )
 	pause = require( "pause" )
 	dbug = require( "dbug" )
 	fonts = require( "fonts" )
@@ -127,8 +140,8 @@ function love.load()
 	staff = require( "staff" )
 	setup = require( "setup" )
 	-- Init
-	screen:set( 90, 1, true ) -- Set to 90, 1, true for cabinet build
-	--screen:set( 0, 2 )
+	--screen:set( 90, 1, true ) -- Set to 90, 1, true for cabinet build
+	screen:set( 0, 2 )
 	love.mouse.setVisible( false )
 	currentGame = game1
 	phase = intro
@@ -148,10 +161,12 @@ end
 function love.update( dt )
 	if initIsComplete and not pause.isActive then
 		dt = dt * globalSpeed[ settings[ 2 ] ] -- Global speed adjustment
+		transition:update( dt, phase )
 		phase:update( dt )
 	else
 		loader:update( dt )
 	end
+	--Temp debug to be removed later
 	if love.keyboard.isDown( input.start ) and love.keyboard.isDown( input.up ) and phase ~= intro then
 		--setup:switch()
 	elseif love.keyboard.isDown( input.start ) and love.keyboard.isDown( input.down ) and phase ~= intro then
@@ -162,6 +177,7 @@ function love.draw()
 	love.graphics.setCanvas( screen.canvas )
 	love.graphics.clear()
 	phase:draw()
+	transition:draw( 0, 64, 252 )
 	pause:draw()
 	love.graphics.setCanvas()
 	if isPCVersion then love.graphics.setShader( screen.shader ) end
@@ -173,7 +189,9 @@ function love.keypressed( key )
 	if key == "p" then pause:set( { sounds, musics } ) end
 	if key == "escape" then love.event.quit() end
 	if key == input.reset then resetEverything( true ) end
-	if key == input.setup and phase ~= seyup then setup:switch() end
+	if key == input.setup and phase ~= seyup then
+		switchTo( setup )
+	end
 	if key == input.coin then
 		if creditSound:isPlaying() then creditSound:stop() end
 		creditSound:play()

@@ -25,7 +25,8 @@ function hiscore:validate()
 	table.remove( hiscores, #hiscores )
 
 	resetEverything()
-	title:switch()
+	--title:switch()
+	switchTo( title, true )
 end
 function hiscore:update( dt )
 	self.timer = self.timer - dt

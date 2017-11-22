@@ -194,7 +194,8 @@ function game:update( dt )
 		self.timer = self.timer - dt
 		if self.timer < 0 then
 			self:reset()
-			gameSelect:switch()
+			--gameSelect:switch()
+			switchTo( gameSelect, true )
 		end
 		self.contact = self.contact - dt
 		if self.contact < 0 then self.contact = 0 end
@@ -235,7 +236,8 @@ function game:keypressed( key )
 end
 function game:complete()
 	self.isComplete = true
-	gameSelect:switch()
+	--gameSelect:switch()
+	switchTo( gameSelect, true )
 end
 function game:switch()
 	currentGame = self

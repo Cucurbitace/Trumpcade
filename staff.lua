@@ -62,9 +62,11 @@ function staff:update( dt )
 	if self.timer > 60 then
 		self.music:stop()
 		if playerHasHiScore( hiscores, score ) then
-			scoreInput:switch()
+			--scoreInput:switch()
+			switchTo( scoreInput )
 		else
-			title:switch()
+			--title:switch()
+			switchTo( title )
 			resetEverything()
 		end
 	end
