@@ -6,6 +6,6 @@ function love.conf(t)
 	t.window.width = 224
 	t.window.height = 320
 	t.console = false
-	--t.window.icon = "gfx/ballGrey.png"
+	--t.window.icon = "icon.png"
 	t.window.vsync = true
 end

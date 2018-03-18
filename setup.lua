@@ -2,10 +2,10 @@
 local setup = {
 	cursor = 1,
 	menu = {
-		{ info = "Credits/coin:", y = 64, source = { "1", "2", "3", "4", "5" }, index = settings[ 1 ] },
-		{ info = "Extra life:", y = 96, source = { "None", "At 500.000", "Every 100.000", "Every 200.000", "Every 500.000" }, index = settings[ 3 ] },
-		{ info = "Speed:", y = 128, source = { "100%", "110%", "120%", "130%", "140%", "150%" }, index = settings[ 2 ] },
-		{ info = "Attract mode:", y = 160, source = { "ON", "OFF" }, index = settings[ 4 ] },
+		{ info = "Credits/coin:", y = 64, source = { "1", "2", "3", "4", "5" }, index = settings[ 1 ] or 1 },
+		{ info = "Extra life:", y = 96, source = { "None", "At 500.000", "Every 100.000", "Every 200.000", "Every 500.000" }, index = settings[ 3 ] or 1 },
+		{ info = "Speed:", y = 128, source = { "100%", "110%", "120%", "130%", "140%", "150%" }, index = settings[ 2 ] or 1 },
+		{ info = "Attract sound:", y = 160, source = { "ON", "OFF" }, index = settings[ 4 ] or 1 },
 	},
 }
 
@@ -39,8 +39,7 @@ function setup:keypressed( key )
 	elseif key == input.right then
 		self:moveOption( 1 )
 	elseif key == input.start then
-		self:writeOption()
-		--intro:switch()
+		self:writeOption( settings )
 		switchTo( intro )
 	end
 end
@@ -64,21 +63,6 @@ function setup:writeOption( settings )
 		end
 	end
 	file:write( output )
-end
-function setup:loadOption()
-	local settings
-	if love.filesystem.exists( path ) then
-		settings = {}
-		for line in love.filesystem.lines( path ) do
-			table.insert( settings, tonumber( line ) )
-		end
-	else
-		settings = { 1, 1, 1, 2 } -- Credits per coin, global speed, extra life scheme, attract mode.
-		local file, errorstr = love.filesystem.newFile( path, "w" )
-		self:writeOption( settings )
-		--file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
-	end
-	return settings
 end
 function setup:moveCursor( direction )
 	self.cursor = self.cursor + direction

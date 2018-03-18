@@ -23,5 +23,5 @@ return {
 	coin = "(",
 	start = "&",
 	reset = "f3",
-	setup = "f2"
+	setup = "f4"
 }

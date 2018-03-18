@@ -71,7 +71,8 @@ function player:update( dt, game, points )
 				points:add( "+30", enemy.x - 4, enemy.y )
 				toRemove = true
 				self.canShoot = true
-				table.remove( game.wave, index )
+				game:removeEnemy( index, true )
+				--table.remove( game.wave, index )
 				break
 			end
 		end
@@ -102,5 +103,16 @@ function player:draw( game, points )
 	self.anim:draw( math.floor( self.x ), math.floor( self.y ), 0, self.direction, 1, 16 )
 	if self.hasBrick then love.graphics.draw( game1.bricks, game.brick.frames[ 1 ], self.x, self.y, 0, self.direction, 1, 8, -8 ) end
 	--love.graphics.rectangle( "line", self.x - 8, self.y + 8, self.w, self.h )
+end
+function player:reset()
+	self.isAlive = true
+	self.position = 1
+	self.hasBrick = false
+	self.canShoot = true
+	self.x = 100
+	self.y = 280
+	self.w = 16
+	self.h = 16
+	self.speed = 100
 end
 return player

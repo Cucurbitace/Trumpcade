@@ -30,7 +30,8 @@ function transition:update( dt, phase )
 		if self.size > 40 then
 			self.size = 40
 			self.direction = -1
-			switchTo( self.target, self.targetParam )
+			self.target:switch( self.targetParam )
+			--switchTo( self.target, self.targetParam )
 		elseif self.size < 0 then
 			self.size = 0
 			self.direction = 1

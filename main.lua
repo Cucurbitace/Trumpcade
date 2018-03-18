@@ -5,7 +5,7 @@ require( "libs.animator" )
 require( "libs.cheatCode" )
 require( "libs.speechBubble" )
 require( "libs.BGimage" )
-local version = 0.3.4
+local version = "0.3.4"
 -- Common functions -------------------------------------------------------------------------------
 function loadSettings( path )
 	local settings
@@ -189,7 +189,7 @@ function love.keypressed( key )
 	if key == "p" then pause:set( { sounds, musics } ) end
 	if key == "escape" then love.event.quit() end
 	if key == input.reset then resetEverything( true ) end
-	if key == input.setup and phase ~= seyup then
+	if key == input.setup and phase ~= setup then
 		switchTo( setup )
 	end
 	if key == input.coin then
