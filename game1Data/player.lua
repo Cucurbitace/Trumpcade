@@ -11,7 +11,12 @@ local player = {
 }
 function player:set()
 	self.lives = 3
-	score = 0
+end
+function player:kill( game )
+	self.bullet = nil
+	self.isAlive = false
+	game.introIsActive = true
+	sounds.trumpDeath:play()
 end
 function player:move( dt, direction, first, last, pace )
 	if self.anim.first ~= first then
@@ -47,7 +52,7 @@ end
 function player:shoot()
 	if self.canShoot and not self.hasBrick then
 		self.canShoot = false
-		self.bullet = { x = self.x, y = self.y, w = 8, h = 8, angle = 0 }
+		self.bullet = { x = self.x, y = self.y, w = 8, h = 8, angle = 0, quad = self.food[ love.math.random( #self.food ) ] }
 		if sounds.shootFood:isPlaying() then sounds.shootFood:stop() end
 		sounds.shootFood:play()
 	end
@@ -82,11 +87,11 @@ function player:update( dt, game, points )
 	self.anim:update( dt )
 	-- Movement
 	if love.keyboard.isDown( input.left ) then
-		self:move( dt, -1, 1, 6, 0.07 )
+		self:move( dt, -1, 5, 10, 0.07 )
 	elseif love.keyboard.isDown( input.right ) then
-		self:move( dt, 1, 1, 6, 0.07 )
+		self:move( dt, 1, 5, 10, 0.07 )
 	else
-		if self.anim.first ~= 7 then self.anim:set( 7, 10, 0.2 ) end
+		if self.anim.first ~= 1 then self.anim:set( 1, 4, 0.2 ) end
 		self.isMoving = false
 	end
 	self.position = math.ceil( self.x / 16 )
@@ -95,16 +100,17 @@ function player:draw( game, points )
 	if self.bullet then
 		if self.bullet.y > 44 then
 			love.graphics.setColor( 0, 0, 0, 64 )
-			love.graphics.draw( game.food, game.hamburger, self.bullet.x, self.bullet.y + 6, self.bullet.angle, 1, 1, 4, 4 )
+			love.graphics.draw( game.sheet, self.bullet.quad, self.bullet.x, self.bullet.y + 6, self.bullet.angle, 1, 1, 4, 4 )
 		end
 		love.graphics.setColor( 255, 255, 255 )
-		love.graphics.draw( game.food, game.hamburger, self.bullet.x, self.bullet.y, self.bullet.angle, 1, 1, 4, 4 )
+		love.graphics.draw( game.sheet, self.bullet.quad, self.bullet.x, self.bullet.y, self.bullet.angle, 1, 1, 4, 4 )
 	end
 	self.anim:draw( math.floor( self.x ), math.floor( self.y ), 0, self.direction, 1, 16 )
 	if self.hasBrick then love.graphics.draw( game1.bricks, game.brick.frames[ 1 ], self.x, self.y, 0, self.direction, 1, 8, -8 ) end
 	--love.graphics.rectangle( "line", self.x - 8, self.y + 8, self.w, self.h )
 end
 function player:reset()
+	self.bullet = nil
 	self.isAlive = true
 	self.position = 1
 	self.hasBrick = false

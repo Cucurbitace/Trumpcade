@@ -53,7 +53,7 @@ function setup:writeOption( settings )
 		settings[ i ] = self.menu[ i ].index 
 	end
 	love.filesystem.remove( "data" )
-	local file, errorstr = love.filesystem.newFile( "data", "w" )
+	local file, _ = love.filesystem.newFile( "data", "w" )
 	local output = ""
 	for index, value in pairs( settings ) do
 		if index < #settings then
