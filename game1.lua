@@ -32,7 +32,7 @@ function newEnemy( x, y, w, h, sw, sh, framesCount )
 end
 
 
--- Border Invaders, AKA game 1
+-- Border Invaders, AKA game 1f
 local sw, sh = 384, 112
 local game = {
 	animIndex = 1,
@@ -47,9 +47,6 @@ local game = {
 	brickOnWall = 0,
 	stage = 0,
 	showGrid = false,
-	--food = love.graphics.newImage( "graphics/foodtiles.png" ),
-	--hamburger = love.graphics.newQuad( 32, 48, 8, 8, sw, sh ),
-	--lime = love.graphics.newQuad( 24, 56, 8, 8, sw, sh ),
 	enemyBullets = {
 		love.graphics.newQuad( 24, 56, 8, 8, sw, sh ), -- Lime
 		love.graphics.newQuad( 24, 64, 8, 8, sw, sh ), -- Lemon
@@ -61,7 +58,7 @@ local game = {
 	bricks = love.graphics.newImage( "graphics/bricks.png" ),
 	brick = {
 		frames = {
-			love.graphics.newQuad( 0, 0, 16, 16, 128, 16 ),
+			love.graphics.newQuad(  0, 0, 16, 16, 128, 16 ),
 			love.graphics.newQuad( 16, 0, 16, 16, 128, 16 ),
 			love.graphics.newQuad( 32, 0, 16, 16, 128, 16 ),
 			love.graphics.newQuad( 48, 0, 16, 16, 128, 16 ),
@@ -69,7 +66,24 @@ local game = {
 			love.graphics.newQuad( 80, 0, 16, 16, 128, 16 ),
 			love.graphics.newQuad( 96, 0, 16, 16, 128, 16 ),
 		},
-	},	
+	},
+	sombrero = {
+		frames = {
+			love.graphics.newQuad(  80, 64, 32, 16, sw, sh ),
+			love.graphics.newQuad( 112, 64, 32, 16, sw, sh ),
+			love.graphics.newQuad( 144, 64, 32, 16, sw, sh ),
+			love.graphics.newQuad( 176, 64, 32, 16, sw, sh ),
+		},
+		timer = 0,
+		index = 1,
+		isAlive = false,
+		x = 224,
+		y = 48,
+		w = 32,
+		h = 10,
+		delay = 14,
+		value = 100,
+	},
 	fc = math.rad( 360 ),
 	alpha = { value = 255, direction = -1 },
 	run_trigger = 160,
@@ -223,6 +237,45 @@ function wall:draw( y, brick )
 	end
 	love.graphics.setColor( 255, 255, 255 )
 end
+function game.sombrero:reset( kill )
+	if kill then
+		explosions:add( self.x, self.y )
+		explosions:add( self.x + 16, self.y )
+	end
+	self.isAlive = false
+	self.x = 224
+	self.delay = love.math.random( 10, 15 )
+	self.value = 100
+end
+function game.sombrero:update( dt, speed )
+	if self.isAlive then
+		-- Animation
+		self.timer = self.timer + dt
+		if self.timer > 0.1 then
+			self.timer = self.timer - 0.1
+			self.index = self.index + 1
+			if self.index > 4 then
+				self.index = 1
+			end
+		end
+		-- Movement
+		self.x = self.x - dt * speed * 2
+		if self.x < -32 then
+			self:reset()
+		end
+	else
+		self.delay = self.delay - dt
+		if self.delay < 0 then
+			self.delay = 0
+			self.isAlive = true
+		end
+	end
+end
+function game.sombrero:draw( texture )
+	if self.isAlive then
+		love.graphics.draw( texture, self.frames[ self.index ], self.x, self.y )
+	end
+end
 function game:enemyShoot( x, y )
 	table.insert( self.hostileFood, { x = x, y = y, w = 4, h = 4, id = 2, angle = 0, quad = self.enemyBullets[ love.math.random( #self.enemyBullets ) ] } )
 end
@@ -336,6 +389,8 @@ function game:updateEnemies( dt )
 				for _, element in pairs( wall.structure ) do
 					if #element.blocks == 0 and enemy.x > element.x and enemy.x < element.x + 4 then
 						enemy.isZoning = false
+					elseif enemy.y > 256 then
+						--self:removeEnemy( index, true )
 					end
 				end
 			end
@@ -359,6 +414,7 @@ function game:drawEnemies()
 	for _, enemy in pairs( self.wave ) do
 		love.graphics.draw( self.sheet, self.enemyShadow, enemy.x, enemy.y, 0, 1, 1, 2, -20 )
 		love.graphics.draw( self.sheet, enemies[ enemy.quad ][ self.animIndex ], enemy.x, enemy.y, 0, 1, 1, 4, 4 )
+		love.graphics.print( enemy.y, 0, enemy.y )
 		--love.graphics.rectangle( "line", enemy.x, enemy.y, enemy.w, enemy.h )
 		--love.graphics.print( enemy.block, enemy.x, enemy.y )
 	end
@@ -374,7 +430,6 @@ function game:removeEnemy( index, boom )
 		sound:play()
 	end
 	self.speed = self.speed + 0.5
-	print( self.wave[ index ].id, self.wave[ index ].y )
 	table.remove( self.wave, index )
 end
 
@@ -393,12 +448,13 @@ function game:update( dt )
 			self.introIsActive = false
 		end
 	elseif ( #self.wave > 0 or self.brickOnWall == 36 ) and player.isAlive then
+		self.sombrero:update( dt, self.speed )
 		self:updateHostileFood( dt )	
 		if not tweeter.isActive then
 			player:update( dt, self, points )
 		end
 		self:updateEnemies( dt )
-		if #self.wave < 1 then
+		if #self.wave < 1 and not self.sombrero.isAlive then
 			--self.stage = self.stage + 1
 			self.hostileFood = {}
 			player:reset()
@@ -429,6 +485,7 @@ function game:update( dt )
 end
 function game:draw()
 	love.graphics.draw( self.bg, 0, 0 )
+	self.sombrero:draw( self.sheet )
 	self:drawEnemies()
 	explosions:draw( self.sheet )
 	self:drawHostileFood()
@@ -479,7 +536,7 @@ function game:keypressed( key )
 			tweeter:type()
 		end
 	elseif player.isAlive and not self.introIsActive then
-		if key == input.a then player:shoot() end
+		if key == input.a then player:shoot( self ) end
 		if key == input.b then
 			if player.x < 16 or player.x > 208 then
 				player:pickBrick( self )
@@ -503,6 +560,7 @@ function game:switch()
 	player:set()
 end
 function game:set()
+	self.sombrero:reset()
 	self.animIndex = 1
 	self.introIsActive = true
 	love.graphics.setFont( fonts.dialog )

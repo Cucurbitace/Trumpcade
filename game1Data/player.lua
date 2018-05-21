@@ -15,6 +15,7 @@ end
 function player:kill( game )
 	self.bullet = nil
 	self.isAlive = false
+	game.sombrero:reset()
 	game.introIsActive = true
 	sounds.trumpDeath:play()
 end
@@ -49,12 +50,18 @@ function player:putBrick( game, wall, points )
 		sounds.putBrick:play()
 	end
 end
-function player:shoot()
+function player:shoot( game )
 	if self.canShoot and not self.hasBrick then
 		self.canShoot = false
 		self.bullet = { x = self.x, y = self.y, w = 8, h = 8, angle = 0, quad = self.food[ love.math.random( #self.food ) ] }
 		if sounds.shootFood:isPlaying() then sounds.shootFood:stop() end
 		sounds.shootFood:play()
+		if not game.sombrero.isAlive then
+			game.sombrero.value = game.sombrero.value + 10
+			if game.sombrero.value > 150 then
+				game.sombrero.value = 100
+			end
+		end
 	end
 end
 function player:update( dt, game, points )
@@ -80,6 +87,14 @@ function player:update( dt, game, points )
 				--table.remove( game.wave, index )
 				break
 			end
+		end
+		-- Sombrero
+		if CheckCollision( self.bullet.x, self.bullet.y, self.bullet.w, self.bullet.h, game.sombrero.x, game.sombrero.y, game.sombrero.w, game.sombrero.h ) then
+			score = score + game.sombrero.value
+			points:add( tostring( game.sombrero.value ), game.sombrero.x + 4, game.sombrero.y )
+			toRemove = true
+			self.canShoot = true
+			game.sombrero:reset( true )
 		end
 	end
 	if toRemove then self.bullet = nil end

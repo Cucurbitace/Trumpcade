@@ -32,7 +32,7 @@ function setEnemiesMovingMode( enemies, mode )
 		enemy.movingMode = mode
 	end
 end
-local function newLevel( game, map, size, sheet )
+local function newLevel( game, map, size, sheet, xstart )
 	local level = { blocks = {}, points = {}, background = love.graphics.newSpriteBatch( sheets.game2, 930, "static" ), count = 0, tiles = {} }
 	local function isSpecial( index )
 		if index > 430 and index < 458 then
@@ -48,13 +48,13 @@ local function newLevel( game, map, size, sheet )
 		end
 	end
 	-- Tiles
-	local x, y = 0, 0
+	local x, y = xstart, 0
 	for i = 1, 42 do
 		local tile = love.graphics.newQuad( x, y, game.size, game.size, sw, sh )
 		table.insert( level.tiles, tile )
 		x = x + game.size
 		if i % 3 == 0 then
-			x = 0
+			x = xstart
 			y = y + game.size
 		end
 	end
@@ -227,8 +227,9 @@ function game:update( dt )
 			if self.currentLevel > #self.maps then
 				self.isOutro = true
 			else
-				self.level = newLevel( self.maps[ currentLevel ], self.size, sheets.game2 )
+				self.level = newLevel( game, self.maps[ self.currentLevel ], self.size, sheets.game2, self.currentLevel * 48 - 48 )
 				player:reset()
+				self:resetEnemies()
 				self.intro.isActive = true
 			end
 		else
@@ -276,9 +277,7 @@ function game:update( dt )
 						--continue:switch()
 						switchTo( continue, true )
 					end
-					for _, enemy in pairs( self.enemies ) do
-						enemy:reset()
-					end
+					self:resetEnemies()
 					self.intro.isActive = true
 					self.cam:setPosition( player.x - 16, player.y - 16 )
 				end
@@ -402,7 +401,7 @@ end
 function game:switch()
 	self.cam:setWindow( 0, 0, 224, 320 )
 	self.cam:setPosition( player.x - 16, player.y - 16 )
-	self.level = newLevel( game, game.maps[ 1 ], game.size, sheets.game2 )
+	self.level = newLevel( game, game.maps[ 1 ], game.size, sheets.game2, 0 )
 	player.anim = trumpAnim
 	self.enemies = {
  		newCharacter( game, 1, woman1Animation, 256, 256, 40, 35, 466, 35, { frCount = 69, rFirst = 15, rLast = 18, lFirst = 5, lLast = 8, uFirst = 9, uLast = 12, dFirst = 1, dLast = 4 }, 93, 21, 7, player ), -- 93 or 118 or 813 or 838 for patrolBlock	
@@ -424,6 +423,7 @@ end
 function game:resetEnemies()
 	for _, enemy in pairs( self.enemies ) do
 		enemy:reset()
+		enemy.movingMode = "patrol"
 	end
 end
 function game:reset()

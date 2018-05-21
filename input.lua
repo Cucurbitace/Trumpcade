@@ -20,8 +20,8 @@ return {
 	a = "x",
 	b = "c",
 	c = "v",
-	coin = "(",
-	start = "&",
+	coin = "kp5",
+	start = "kp1",
 	reset = "f3",
 	setup = "f4"
 }

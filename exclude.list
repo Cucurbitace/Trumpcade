@@ -11,3 +11,5 @@ raw*
 *.psd
 *.exe
 *.zip
+*.pxi
+*.pyxel

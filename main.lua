@@ -1,3 +1,6 @@
+--[[
+Trumpcade. A pseudo retro game about Donald Trump.
+]]
 score = 0
 loader = require( "libs.love-loader" )
 require( "libs.arcade" )
@@ -18,6 +21,9 @@ function loadSettings( path )
 		settings = { 1, 1, 1, 2 } -- Credits per coin, global speed, extra life scheme, attract mode.
 		local file, errorstr = love.filesystem.newFile( path, "w" )
 		--file:write( tostring( settings[ 1 ] ).."\n"..tostring( settings[ 2 ] ).."\n"..tostring( settings[ 3 ] ) )
+	end
+	if #settings == 0 then
+		settings = { 1, 1, 1, 2 }
 	end
 	return settings
 end
@@ -148,7 +154,7 @@ function love.load()
 	loader.start( function()
 		initIsComplete = true
 		-- Animations are created here once the image are loaded.
-		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.1, 38, 0, 0, 128, 320, 1, 4 )
+		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.1, 38, 0, 0, 128, 384, 1, 4 )
 		title.glitch.anim = newAnimation( sheets.title, 99, 16, 0.01, 6, 224, 320, 99, 95, 1, 6 )
 		gameSelect.coin = newAnimation( sheets.select, 32, 32, 0.05, 6, 0, 160, 192, 32, 1, 6 )
 		woman1Animation = newAnimation( sheets.game2, 32, 32, 0.1, 69, 128, 192, 128, 288, 1, 4 )
@@ -168,7 +174,7 @@ function love.update( dt )
 	end
 	--Temp debug to be removed later
 	if love.keyboard.isDown( input.start ) and love.keyboard.isDown( input.up ) and phase ~= intro then
-		--setup:switch()
+		setup:switch()
 	elseif love.keyboard.isDown( input.start ) and love.keyboard.isDown( input.down ) and phase ~= intro then
 		resetEverything( true )
 	end
