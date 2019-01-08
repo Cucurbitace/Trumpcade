@@ -51,7 +51,7 @@ function title:update( dt )
 	if self.timer > 2 and self.timer < 3 then
 		if self.glitch.trigger then
 			self.glitch.trigger = false
-			if settings[ 4 ] == 1 then
+			if settings[ 4 ] == 1 and not transition.isActive then
 				sounds.glitch:play()
 			end
 		end
@@ -65,7 +65,7 @@ function title:update( dt )
 		self.currentDemo = self.demos[ self.demoIndex ]
 		self.currentDemo:play()
 		if not self.currentDemo:isPlaying() then
-			music:play()
+			music = musics.anthem
 			self.currentDemo:pause()
 			self.currentDemo:rewind()
 			self.demoIndex = self.demoIndex + 1
@@ -83,7 +83,7 @@ function title:update( dt )
 end
 function title:draw()
 	if self.currentDemo then
-		love.graphics.draw( self.currentDemo, 224, 0, math.rad( 90 ) )
+		love.graphics.draw( self.currentDemo, 0, 0, 0, 0.5 )
 	elseif self.timer < 5 then
 		love.graphics.draw( sheets.title, self.wdud, 0, 0 )
 		self.glitch.anim:draw( 20, 240 )

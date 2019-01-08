@@ -1,3 +1,4 @@
+local sw, sh = 384, 112
 local player = {
 	isAlive = true,
 	position = 1,
@@ -8,15 +9,23 @@ local player = {
 	w = 16,
 	h = 16,
 	speed = 100,
+	food = {
+		love.graphics.newQuad( 32, 48, 8, 8, sw, sh ), -- Hamburger
+		love.graphics.newQuad( 64, 64, 8, 8, sw, sh ), -- Pizza
+		love.graphics.newQuad( 40, 72, 8, 8, sw, sh ), -- Fries
+	},
 }
 function player:set()
 	self.lives = 3
 end
 function player:kill( game )
+	tweeter:kill()
+	self.anim:set( 43, 43, 1 )
+	self.hasBrick = false
 	self.bullet = nil
 	self.isAlive = false
 	game.sombrero:reset()
-	game.introIsActive = true
+	--game.introIsActive = true
 	sounds.trumpDeath:play()
 end
 function player:move( dt, direction, first, last, pace )
@@ -52,6 +61,7 @@ function player:putBrick( game, wall, points )
 end
 function player:shoot( game )
 	if self.canShoot and not self.hasBrick then
+		self.anim:set( 39, 42, 0.1 )
 		self.canShoot = false
 		self.bullet = { x = self.x, y = self.y, w = 8, h = 8, angle = 0, quad = self.food[ love.math.random( #self.food ) ] }
 		if sounds.shootFood:isPlaying() then sounds.shootFood:stop() end
@@ -68,9 +78,11 @@ function player:update( dt, game, points )
 	-- Bullet
 	local toRemove = false
 	if self.bullet then
+		-- Bullet rotation
 		self.bullet.angle = self.bullet.angle + dt * 10
 		if self.bullet.angle > game.fc then self.bullet.angle = self.bullet.angle - game.fc end
-		self.bullet.y = self.bullet.y - dt * 150
+		-- Bullet movement
+		self.bullet.y = self.bullet.y - dt * 200
 		-- Remove bullet out of screen
 		if self.bullet.y < -8 then
 			toRemove = true
@@ -106,10 +118,16 @@ function player:update( dt, game, points )
 	elseif love.keyboard.isDown( input.right ) then
 		self:move( dt, 1, 5, 10, 0.07 )
 	else
-		if self.anim.first ~= 1 then self.anim:set( 1, 4, 0.2 ) end
+		if self.anim.first ~= 1 and self.canShoot then self.anim:set( 1, 4, 0.2 ) end
 		self.isMoving = false
 	end
+	if self.anim.index == 42 then
+		self.anim:set( 1, 4, 0.2 )
+	end
 	self.position = math.ceil( self.x / 16 )
+	if not self.isAlive then
+		self.anim:set( 43, 43, 1 )
+	end
 end
 function player:draw( game, points )
 	if self.bullet then

@@ -8,7 +8,7 @@ require( "libs.animator" )
 require( "libs.cheatCode" )
 require( "libs.speechBubble" )
 require( "libs.BGimage" )
-local version = "0.3.4"
+local version = "0.3.8"
 -- Common functions -------------------------------------------------------------------------------
 function loadSettings( path )
 	local settings
@@ -119,9 +119,18 @@ function love.load()
 	loader.newSource( sounds, "shootFood", "sounds/shoot_food.wav" )
 	-- Music data
 	musics = {}
+	loader.newSource( musics, "victory", "music/Victory.ogg", "static" )
 	loader.newSource( musics, "anthem", "music/anthem.ogg", "stream" )
-	loader.newSource( musics, "select", "music/Do not move PSG.mp3", "stream" )
+	--loader.newSource( musics, "select", "music/Do not move PSG.mp3", "stream" )
+	loader.newSource( musics, "select", "music/Juhani Junkala [Chiptune Adventures] 4. Stage Select.ogg", "stream" )
 	loader.newSource( musics, "whiteHouse", "music/Lunar.ogg", "stream" )
+	loader.newSource( musics, "Texas", "music/Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg", "stream" )
+	loader.newSource( musics, "New Mexico", "music/Juhani Junkala [Chiptune Adventures] 2. Stage 2.ogg", "stream" )
+	loader.newSource( musics, "Arizona", "music/Juhani Junkala [Chiptune Adventures] 3. Boss Fight.ogg", "stream" )
+	loader.newSource( musics, "California", "music/Juhani Junkala [Retro Game Music Pack] Level 1.ogg", "stream" )
+	loader.newSource( musics, "Washington", "music/Juhani Junkala [Retro Game Music Pack] Level 2.ogg", "stream" )
+	loader.newSource( musics, "result", "music/Action3 - Preparing For Battle.ogg", "stream" )
+	loader.newSource( musics, "hiscore", "music/OveMelaa - Trance Bit Bit Loop.ogg", "stream" )
 	-- Code import
 	transition = require( "transition" )
 	pause = require( "pause" )
@@ -145,16 +154,17 @@ function love.load()
 	scoreInput = require( "scoreInput" )
 	staff = require( "staff" )
 	setup = require( "setup" )
+	test = require( "test" )
 	-- Init
 	--screen:set( 90, 1, true ) -- Set to 90, 1, true for cabinet build
 	screen:set( 0, 2 )
 	love.mouse.setVisible( false )
-	currentGame = game1
+	currentGame = intro
 	phase = intro
 	loader.start( function()
 		initIsComplete = true
 		-- Animations are created here once the image are loaded.
-		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.1, 38, 0, 0, 128, 384, 1, 4 )
+		trumpAnim = newAnimation( sheets.trump, 32, 32, 0.1, 48, 0, 0, 128, 384, 1, 4 )
 		title.glitch.anim = newAnimation( sheets.title, 99, 16, 0.01, 6, 224, 320, 99, 95, 1, 6 )
 		gameSelect.coin = newAnimation( sheets.select, 32, 32, 0.05, 6, 0, 160, 192, 32, 1, 6 )
 		woman1Animation = newAnimation( sheets.game2, 32, 32, 0.1, 69, 128, 192, 128, 288, 1, 4 )
@@ -166,8 +176,17 @@ function love.load()
 end
 function love.update( dt )
 	if initIsComplete and not pause.isActive then
-		dt = dt * globalSpeed[ settings[ 2 ] ] -- Global speed adjustment
+		if love.keyboard.isDown( "s" ) then
+			dt = dt * 10
+		else
+			dt = dt * globalSpeed[ settings[ 2 ] ] -- Global speed adjustment
+		end
 		transition:update( dt, phase )
+		if not transition.isActive and music then
+			if not music:isPlaying() then
+				music:play()
+			end
+		end
 		phase:update( dt )
 	else
 		loader:update( dt )
@@ -190,6 +209,7 @@ function love.draw()
 	love.graphics.draw( screen.canvas, 0, 0, screen.angle, screen.scale, screen.scale, screen.ox, screen.oy )
 	if isPCVersion then love.graphics.setShader() end
 	love.graphics.setFont( fonts.debug )
+	love.graphics.print( version )
 end
 function love.keypressed( key )
 	if key == "p" then pause:set( { sounds, musics } ) end
@@ -203,7 +223,7 @@ function love.keypressed( key )
 		creditSound:play()
 		credits = credits + creditsPerCoin[ settings[ 1 ] ]
 	end
-	if phase.keypressed then phase:keypressed( key ) end
+	if phase.keypressed and not transition.isActive then phase:keypressed( key ) end
 	--dbug:keypressed( key )
 	if key == "h" then phase:complete() end
 end

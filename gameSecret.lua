@@ -1,4 +1,4 @@
--- Game 2
+-- Secret Game
 local function newSplash( x, y )
 	local splash = { x = x, y = y }
 	local angle = math.rad( -love.math.random( 0, 180 ) )

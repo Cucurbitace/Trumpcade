@@ -4,6 +4,6 @@ local scores = {
 	{ name = "Stevie B.", value = 900000 },
 	{ name = "Big Daddy V.", value = 700000 },
 	{ name = "Jared", value = 600000 },
-	{ name = "Melania", value = 500000 }
+	{ name = "Melania", value = 5 }
 }
 return scores

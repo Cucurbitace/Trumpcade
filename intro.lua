@@ -39,7 +39,6 @@ function intro:update( dt )
 		self.index = self.index + 1
 		if self.index > #self.text then
 			self.index = #self.text
-			--title:switch()
 			switchTo( title, true )
 		end
 	end
@@ -56,7 +55,7 @@ function intro:switch()
 	self.index = 1
 	self.timer = 0
 	self.y = 0
-	if music then music:stop() end
+	music = nil
 	phase = self
 end
 return intro

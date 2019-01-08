@@ -40,7 +40,9 @@ function gameSelect:update( dt )
 		self.alpha = 0
 		self.operator = 1
 	end
-	self.timer = self.timer - dt
+	if not transition.isActive then
+		self.timer = self.timer - dt
+	end
 	if self.timer < 0 then
 		score = 0
 		self.timer = 0
@@ -118,6 +120,7 @@ end
 function gameSelect:switch( reset )
 	if music then music:stop() end
 	music = musics.select
+	music:setVolume( 0.5 )
 	music:play()
 	if reset then self.pointer = 0 end
 	self.timer = 30

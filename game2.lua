@@ -160,10 +160,6 @@ local function newLevel( game, map, size, sheet, xstart )
 				love.graphics.draw( sheets.game2, game.viagra, block.x, block.y )
 			end
 			love.graphics.setFont( fonts.score )
-			for _, point in pairs( self.points ) do
-				love.graphics.setColor( 255, 255, 255 )
-				love.graphics.print( point.value, math.floor( point.x ), math.floor( point.y ) )
-			end
 			-- Debug related
 			--love.graphics.setFont( fonts.tiny )
 			--love.graphics.setColor( 0, 0, 0 )
@@ -171,6 +167,10 @@ local function newLevel( game, map, size, sheet, xstart )
 			--love.graphics.line( block.x, block.y, block.x, block.y + 15 )
 			--love.graphics.print( block.index, block.x + 1, block.y + 1 )
 			--if block.playerTrace then love.graphics.print( math.floor( block.playerTrace ), block.x, block.y ) end
+		end
+		for _, point in pairs( self.points ) do
+			love.graphics.setColor( 255, 255, 255, point.alpha )
+			love.graphics.print( point.value, math.floor( point.x ), math.floor( point.y ) )
 		end
 	end
 	return level
@@ -399,6 +399,7 @@ function game:continue()
 	player.lives = 3
 end
 function game:switch()
+	sounds.pickupCoin:setVolume( 0.2 )
 	self.cam:setWindow( 0, 0, 224, 320 )
 	self.cam:setPosition( player.x - 16, player.y - 16 )
 	self.level = newLevel( game, game.maps[ 1 ], game.size, sheets.game2, 0 )

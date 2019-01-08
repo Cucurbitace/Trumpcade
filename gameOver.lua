@@ -4,8 +4,8 @@ local gameOver = {
 	image = love.graphics.newImage( "graphics/nuke.png" ),
 	loserTrigger = true,
 	loserSound = love.audio.newSource( "sounds/loser.ogg" ),
-	xOffset = 16,
-	yOffset = 16,
+	xOffset = 5,
+	yOffset = 5,
 	timer = 0
 }
 function gameOver:update( dt )

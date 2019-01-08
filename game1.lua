@@ -23,16 +23,7 @@ end
 function points:add( value, x, y )
 	table.insert( self.data, { value = value, x = x, y = y, alpha = 255 } )
 end
-function newEnemy( x, y, w, h, sw, sh, framesCount )
-	local enemy = {}
-	for i = 1, framesCount do
-		table.insert( enemy, love.graphics.newQuad( x + ( i - 1 ) * w, y, w, h, sw, sh ) )
-	end
-	return enemy
-end
-
-
--- Border Invaders, AKA game 1f
+-- Border Invaders, AKA game 1
 local sw, sh = 384, 112
 local game = {
 	animIndex = 1,
@@ -89,140 +80,21 @@ local game = {
 	run_trigger = 160,
 }
 local wall = {
-	structure = {
-		{ x =   0, blocks = { 1, 1, 1 } },
-		{ x =  16, blocks = {} },
-		{ x =  32, blocks = {} },
-		{ x =  48, blocks = {} },
-		{ x =  64, blocks = {} },
-		{ x =  80, blocks = {} },
-		{ x =  96, blocks = {} },
-		{ x = 112, blocks = {} },
-		{ x = 128, blocks = {} },
-		{ x = 144, blocks = {} },
-		{ x = 160, blocks = {} },
-		{ x = 176, blocks = {} },
-		{ x = 192, blocks = {} },
-		{ x = 208, blocks = { 1, 1, 1 } },
-	},
+	structure = {},
 }
+local flag = require( "game1Data.flag" )
 local player = require( "game1Data.player" )
-player.food = {
-	love.graphics.newQuad( 32, 48, 8, 8, sw, sh ), -- Hamburger
-	love.graphics.newQuad( 64, 64, 8, 8, sw, sh ), -- Pizza
-	love.graphics.newQuad( 40, 72, 8, 8, sw, sh ), -- Fries
-}
-local levels = {
-	{ name = "Texas",      speed = 10, bg = love.graphics.newImage( "graphics/game1_bg1.png" ), wave = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5 } },
-	{ name = "New Mexico", speed = 12, bg = love.graphics.newImage( "graphics/game1_bg2.png" ), wave = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7 } },
-	{ name = "Arizona",    speed = 13, bg = love.graphics.newImage( "graphics/game1_bg3.png" ), wave = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5 } },
-	{ name = "California", speed = 14, bg = love.graphics.newImage( "graphics/game1_bg4.png" ), wave = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7 } },
-	{ name = "Washington", speed = 15, bg = love.graphics.newImage( "graphics/game1_bg5.png" ), wave = { 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12 } },
-}
-local enemies = {
-	newEnemy(   0, 16, 16, 32, sw, sh, 2 ), --  1, Worker
-	newEnemy(  32, 16, 16, 32, sw, sh, 2 ), --  2, Male luchador
-	newEnemy(  64, 16, 16, 32, sw, sh, 2 ), --  3, Padre
-	newEnemy(  96, 16, 16, 32, sw, sh, 2 ), --  4, Doctor
-	newEnemy( 128, 16, 16, 32, sw, sh, 2 ), --  5, Muerte
-	newEnemy( 160, 16, 16, 32, sw, sh, 2 ), --  6, Female luchador
-	newEnemy( 192, 16, 16, 32, sw, sh, 2 ), --  7, Wheelchair
-	newEnemy( 224, 16, 16, 32, sw, sh, 2 ), --  8, Lumberjack red
-	newEnemy( 256, 16, 16, 32, sw, sh, 2 ), --  9, Lumberjack green
-	newEnemy( 288, 16, 16, 32, sw, sh, 2 ), -- 10, Lumberjack blue
-	newEnemy( 320, 16, 16, 32, sw, sh, 2 ), -- 11, Mountie
-	newEnemy( 208, 48, 16, 32, sw, sh, 2 ), -- 12, Bear
-	newEnemy( 240, 48, 16, 32, sw, sh, 2 ), -- 13, Indian
-	--love.graphics.newQuad(   0, 16, 16, 32, sw, sh ),
-	--love.graphics.newQuad(  32, 16, 16, 32, sw, sh ),
-	--love.graphics.newQuad(  64, 16, 16, 32, sw, sh ),
-	--love.graphics.newQuad(  96, 16, 16, 32, sw, sh ),
-	--love.graphics.newQuad( 128, 16, 16, 32, sw, sh ),
-}
-local explosions = {
-	data = {},
-	frames = {
-		love.graphics.newQuad(   0, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad(  32, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad(  64, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad(  96, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 128, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 160, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 192, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 224, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 256, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 288, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 320, 80, 32, 32, sw, sh ),
-		love.graphics.newQuad( 352, 80, 32, 32, sw, sh ),
-	}
-}
+local levels = require( "game1Data.levels" )
+local enemies = require( "game1Data.enemies" )
+local explosions = require( "game1Data.explosions" )
 local screams = {}
 for i = 1, 19 do
 	local scream = love.audio.newSource( "sounds/death"..tostring( i )..".ogg" )
 	scream:setPitch( 1.5 )
 	table.insert( screams, scream )
 end
-local smoke = {
-	sound = love.audio.newSource( "sounds/impact.ogg" ),
-	frames = {
-		love.graphics.newQuad( 144, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 160, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 176, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 192, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 208, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 224, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 240, 0, 16, 16, sw, sh ),
-		love.graphics.newQuad( 256, 0, 16, 16, sw, sh ),
-	},
-	data = {},
-}
-function smoke:add( x, y )
-	table.insert( self.data, { x = x, y = y, timer = 0, index = 1 } )
-	self.sound:play()
-end
-function smoke:update( dt )
-	for index, entry in pairs( self.data ) do
-		entry.y = entry.y - dt * 20
-		entry.timer = entry.timer + dt
-		if entry.timer > 0.05 then
-			entry.timer = 0
-			entry.index = entry.index + 1
-			if entry.index > 8 then
-				entry.index = 8
-				table.remove( self.data, index )
-			end
-		end
-	end
-end
-function smoke:draw( sheet )
-	for _, entry in pairs( self.data ) do
-		love.graphics.draw( sheet, self.frames[ entry.index ], entry.x, math.floor( entry.y ) )
-	end
-end
-function explosions:add( x, y )
-	table.insert( self.data, { x = x - 8, y = y - 8, timer = 0, index = 1 } )
-end
-function explosions:update( dt )
-	for index, explosion in pairs( self.data ) do
-		explosion.timer = explosion.timer + dt
-		if explosion.timer > 0.05 then
-			explosion.timer = 0
-			explosion.index = explosion.index + 1
-			if explosion.index > 12 then
-				explosion.index = 12
-				table.remove( self.data, index )
-			end
-		end
-	end
-end
-function explosions:draw( sheet )
-	for _, explosion in pairs( self.data ) do
-		love.graphics.draw( sheet, self.frames[ explosion.index ], explosion.x, explosion.y )
-	end
-end
-function explosions:reset()
-	self.data = {}
-end
+local smoke = require( "game1Data.smoke" )
+local snow = require( "game1Data.snow" )
 function wall:draw( y, brick )
 	for _, element in pairs( self.structure ) do
 		if #element.blocks > 0 then
@@ -293,10 +165,12 @@ function game:updateHostileFood( dt )
 					column.blocks[ #column.blocks ] = column.blocks[ #column.blocks ] + 1
 					if column.blocks[ #column.blocks ] > 5 then
 						table.remove( column.blocks, #column.blocks )
+						self.brickOnWall = self.brickOnWall - 1
 					end
 					table.remove( self.hostileFood, index )
 				elseif CheckCollision( player.x - 8, player.y + 8, player.w, player.h, food.x, food.y, food.w, food.h ) then
 					player:kill( self )
+					explosions:add( player.x - 8, player.y + 8 )
 					table.remove( self.hostileFood, index )
 				end
 			end
@@ -337,6 +211,7 @@ function game:resetEnemies()
 	end
 end
 function game:updateEnemies( dt )
+	local loop = 1
 	self.animTimer = self.animTimer + dt * self.speed
 	if self.animTimer > 3 then
 		self.animTimer = 0
@@ -364,8 +239,9 @@ function game:updateEnemies( dt )
 	end
 	-- Wave movement
 	for index, enemy in pairs( self.wave ) do
+		loop = loop + 1
 		if not enemy.coolDown then enemy.coolDown = enemy.coolDownTrigger end
-		if enemy.isZoning then
+		if enemy.isZoning and not enemy.toBeRemoved then
 			enemy.coolDown = enemy.coolDown - dt
 			if enemy.coolDown < 0 then
 				enemy.coolDown = enemy.coolDownTrigger
@@ -390,15 +266,23 @@ function game:updateEnemies( dt )
 					if #element.blocks == 0 and enemy.x > element.x and enemy.x < element.x + 4 then
 						enemy.isZoning = false
 					elseif enemy.y > 256 then
-						--self:removeEnemy( index, true )
+						local x = math.floor( enemy.x / 16 ) * 16
+						if element.x == x then
+							table.remove( element.blocks, #element.blocks )
+							self:removeEnemy( index, true )
+							smoke:add( element.x, 285 - 12 * #element.blocks )
+						end
 					end
 				end
 			end
 		else
-			enemy.y = enemy.y + dt * self.speed * 5
+			enemy.y = enemy.y + dt * self.speed * 4
 			if enemy.y > 321 then
 				self:removeEnemy( index )
+				enemy.toBeRemoved = true
 				if player.isAlive then
+					explosions:add( player.x - 8, player.y + 8 )
+					smoke:add( player.x + 8, player.y + 8 )
 					player:kill( self )
 					for index, runaway in pairs( self.wave ) do
 						if runaway.y > 310 then
@@ -406,7 +290,22 @@ function game:updateEnemies( dt )
 						end
 					end
 				end
+			elseif enemy.y > 256 then
+				for _, element in pairs( wall.structure ) do
+					local x = math.floor( enemy.x / 16 ) * 16
+					if element.x == x and #element.blocks > 0 then
+						table.remove( element.blocks, #element.blocks )
+						self:removeEnemy( index, true )
+						smoke:add( element.x, 285 - 12 * #element.blocks )
+					end
+				end
 			end
+		end
+	end
+	-- Wave clean
+	for index, enemy in pairs( self.wave ) do
+		if enemy.toBeRemoved then
+			table.remove( self.wave, index )
 		end
 	end
 end
@@ -414,7 +313,7 @@ function game:drawEnemies()
 	for _, enemy in pairs( self.wave ) do
 		love.graphics.draw( self.sheet, self.enemyShadow, enemy.x, enemy.y, 0, 1, 1, 2, -20 )
 		love.graphics.draw( self.sheet, enemies[ enemy.quad ][ self.animIndex ], enemy.x, enemy.y, 0, 1, 1, 4, 4 )
-		love.graphics.print( enemy.y, 0, enemy.y )
+		--love.graphics.print( enemy.y, 0, enemy.y )
 		--love.graphics.rectangle( "line", enemy.x, enemy.y, enemy.w, enemy.h )
 		--love.graphics.print( enemy.block, enemy.x, enemy.y )
 	end
@@ -422,6 +321,7 @@ end
 function game:removeEnemy( index, boom )
 	if boom then
 		local enemy = self.wave[ index ]
+		enemy.toBeRemoved = true
 		explosions:add( enemy.x, enemy.y )
 		local sound = screams[ love.math.random( 19 ) ]
 		if sound:isPlaying() then
@@ -430,24 +330,47 @@ function game:removeEnemy( index, boom )
 		sound:play()
 	end
 	self.speed = self.speed + 0.5
-	table.remove( self.wave, index )
+	
+	--table.remove( self.wave, index )
 end
 
 -- Global game functions
 function game:update( dt )
+	if not music:isPlaying() and not transition.isActive then
+		music:play()
+	end
 	tweeter:update( dt )
 	points:update( dt )
 	explosions:update( dt )
 	smoke:update( dt )
 	self:updateGetZone( dt )
 	-- Normal gameplay
+	if self.isSnowing then
+		snow:update( dt )
+	end
 	if self.introIsActive then
 		self.timer = self.timer + dt
 		if self.timer > 2 then
 			self.timer = 0
 			self.introIsActive = false
 		end
-	elseif ( #self.wave > 0 or self.brickOnWall == 36 ) and player.isAlive then
+	elseif self.isComplete then
+		self.timer = self.timer + dt
+		if self.timer > 10 then
+			self.timer = 0
+			self.isComplete = false
+			self.complete()
+		end
+	elseif self.outroIsActive then
+		self.timer = self.timer + dt
+		if self.timer > 4 then
+			self.timer = 0
+			self.outroIsActive = false
+			self.hostileFood = {}
+			player:reset()
+			self:set()
+		end
+	elseif ( #self.wave > 0 or self.brickOnWall == 36 or self.sombrero.isAlive ) and player.isAlive then
 		self.sombrero:update( dt, self.speed )
 		self:updateHostileFood( dt )	
 		if not tweeter.isActive then
@@ -455,63 +378,70 @@ function game:update( dt )
 		end
 		self:updateEnemies( dt )
 		if #self.wave < 1 and not self.sombrero.isAlive then
-			--self.stage = self.stage + 1
-			self.hostileFood = {}
-			player:reset()
-			self:set()
+			player.anim:set( 44, 48, 0.1 )
+			player:update( dt, self, points )
+			if player.anim.index == 48 then
+				player.anim:set( 1, 4, 0.2 )
+			end
+			self.outroIsActive = true
+			music:stop()
+			music = musics.victory
 		end
 	elseif not player.isAlive then
 		self.timer = self.timer + dt
-		if self.timer > 2 then
-			for index, enemy in pairs( self.wave ) do
-				if enemy.toBeRemoved then
-					self:removeEnemy( index )
-				end
-			end
+		if self.timer > 1 then
 			self.timer = 0
+			self.introIsActive = true
+			player.anim:set( 1, 4, 0.2 )
 			self.hostileFood = {}
 			player.lives = player.lives - 1
+			self:resetEnemies()
+			player:reset()
 			if player.lives == 0 then
-				switchTo( continue )
+				music:stop()
+				switchTo( continue, true )
 				--continue:switch()
-			else
-				self:resetEnemies()
-				player:reset()
 			end
 		end
-	else -- Level complete
-
 	end
 end
 function game:draw()
-	love.graphics.draw( self.bg, 0, 0 )
-	self.sombrero:draw( self.sheet )
-	self:drawEnemies()
-	explosions:draw( self.sheet )
-	self:drawHostileFood()
-	wall:draw( 280, self.brick )
-	smoke:draw( self.sheet )
-	love.graphics.setFont( fonts.basic )
-	self:drawGetZone( 0, 288)
-	self:drawGetZone( 208, 288)
-	points:draw( fonts.score )
-	player:draw( self, points )
-	printScore( score, fonts.basic )
-	love.graphics.setColor( 255, 255, 0 )
-	if self.introIsActive then
-		love.graphics.printf( levels[ self.stage].name.."\nGet ready!", 0, 155, 224, "center" )
-	end
-	tweeter:draw( player, fonts.tweeter, fonts.tiny )
-	-- Debug
-	love.graphics.setColor( 255, 255, 255 )
-	if player.lives < 5 then
-		for i = 1, player.lives do
-			love.graphics.draw( sheets.game2, self.heart, i * 9 - 5, 4 )
-		end
+	if self.isComplete then
+		love.graphics.setFont( fonts.basic )
+		love.graphics.printf( "THE DIRTY MEXICANS WON'T PAY FOR THE WALL!\n\nAND NOW THE DEMOCRATS ARE FORCING THE BEST PRESIDENT EVER TO SHUTDOWN!", 10, 50, 204, "center" )
 	else
-		love.graphics.draw( sheets.game2, self.heart, 4, 4 )
+		love.graphics.draw( self.bg, 0, 0 )
+		self.sombrero:draw( self.sheet )
+		self:drawEnemies()
+		self:drawHostileFood()
+		wall:draw( 280, self.brick )
+		smoke:draw( self.sheet )
+		love.graphics.setFont( fonts.basic )
+		self:drawGetZone( 0, 288)
+		self:drawGetZone( 208, 288)
+		player:draw( self, points )
+		explosions:draw( self.sheet )
+		points:draw( fonts.score )
+		printScore( score, fonts.basic )
+		love.graphics.setColor( 255, 255, 0 )
+		if self.introIsActive then
+			love.graphics.printf( levels[ self.stage].name.."\nGet ready!", 0, 155, 224, "center" )
+		end
+		tweeter:draw( player, fonts.tweeter, fonts.tiny )
+		-- Debug
 		love.graphics.setColor( 255, 255, 255 )
-		love.graphics.print( "x"..player.lives, 13, 4 )
+		if player.lives < 5 then
+			for i = 1, player.lives do
+				love.graphics.draw( sheets.game2, self.heart, i * 9 - 5, 4 )
+			end
+		else
+			love.graphics.draw( sheets.game2, self.heart, 4, 4 )
+			love.graphics.setColor( 255, 255, 255 )
+			love.graphics.print( "x"..player.lives, 13, 4 )
+		end
+		if self.isSnowing then
+			snow:draw()
+		end
 	end
 	--debug
 	love.graphics.setColor( 0, 255, 128, 160 )
@@ -531,21 +461,24 @@ function game:draw()
 end
 function game:keypressed( key )
 	--if key == "g" then self.showGrid = not self.showGrid end
-	if tweeter.isActive then
-		if key == input.a or key == input.b or key == input.c then
-			tweeter:type()
-		end
-	elseif player.isAlive and not self.introIsActive then
-		if key == input.a then player:shoot( self ) end
-		if key == input.b then
-			if player.x < 16 or player.x > 208 then
-				player:pickBrick( self )
-			else
-				player:putBrick( self, wall, points )
+	if player.isAlive and not self.introIsActive then
+		
+		if tweeter.isActive then
+			if key == input.a or key == input.b or key == input.c then
+				tweeter:type()
 			end
-		end
-		if key == input.c then
-			tweeter:type( player.x, player.y )
+		else
+			if key == input.a then player:shoot( self ) end
+			if key == input.b then
+				if player.x < 16 or player.x > 208 then
+					player:pickBrick( self )
+				else
+					player:putBrick( self, wall, points )
+				end
+			end
+			if key == input.c then
+				tweeter:type( player.x, player.y )
+			end
 		end
 	end
 end
@@ -566,14 +499,30 @@ function game:set()
 	love.graphics.setFont( fonts.dialog )
 	self.stage = self.stage + 1
 	if self.stage > 5 then
-		self:complete()
+		self.isComplete = true
+		music = musics.result
+		--self:complete()
 	else
-		self.speed = levels[ self.stage ].speed
+		self.isComplete = false
+		local level = levels[ self.stage ]
+		if music then
+			music:stop()
+		end
+		music = musics[ level.name ]
+		music:setVolume( 0.5 )
+		if level.snow then
+			self.isSnowing = true
+		else
+			self.isSnowing = false
+		end
+		self.brickOnWall = level.brickOnWall
+		self.speed = level.speed
 		self.wave_x = 0
 		self.wave_direction = 1
 		self.wave = {}
-		self.bg = levels[ self.stage ].bg
-		local wave = levels[ self.stage ].wave
+		self.bg = level.bg
+		wall.structure = level.structure
+		local wave = level.wave
 		local x, y = 16, 64
 		for i = 1, #wave do
 			table.insert( self.wave, { id = i, quad = wave[ i ], hp = 0, x = x, y = y, startx = x, starty = y, w = 10, h = 15, isZoning = true, block = 0, coolDownTrigger = love.math.random( 5 ) } )
@@ -583,25 +532,10 @@ function game:set()
 				y = y + 16
 			end
 		end
-		wall.structure = {
-			{ x =   0, blocks = { 1, 1, 1 } },
-			{ x =  16, blocks = {} },
-			{ x =  32, blocks = {} },
-			{ x =  48, blocks = {} },
-			{ x =  64, blocks = {} },
-			{ x =  80, blocks = {} },
-			{ x =  96, blocks = {} },
-			{ x = 112, blocks = {} },
-			{ x = 128, blocks = {} },
-			{ x = 144, blocks = {} },
-			{ x = 160, blocks = {} },
-			{ x = 176, blocks = {} },
-			{ x = 192, blocks = {} },
-			{ x = 208, blocks = { 1, 1, 1 } },
-		}
 	end
 end
 function game:complete()
+	music:stop()
 	gameIsComplete[ 1 ] = true
 	if gameIsComplete[ 1 ] and gameIsComplete[ 2 ] and gameIsComplete[ 3 ] then
 		switchTo( staff )

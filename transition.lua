@@ -26,6 +26,11 @@ function transition:set( target, param )
 end
 function transition:update( dt, phase )
 	if self.isActive then
+		if music then
+			if music:isPlaying() then
+				music:stop()
+			end
+		end
 		self.size = self.size + dt * self.direction * 80
 		if self.size > 40 then
 			self.size = 40
@@ -36,6 +41,9 @@ function transition:update( dt, phase )
 			self.size = 0
 			self.direction = 1
 			self.isActive = false
+			if music then
+				music:play()
+			end
 			self.target = nil
 			self.targetParam = nil
 		end

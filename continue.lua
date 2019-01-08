@@ -163,6 +163,7 @@ function continue:keypressed( key )
 	end
 	if credits > 0 and key == input.start then
 		score = 0
+		missile.sound:stop()
 		currentGame:continue()
 	end
 end
@@ -173,7 +174,7 @@ function continue:reset()
 	self.timer = 10
 end
 function continue:switch()
-	if music then music:stop() end
+	music = nil
 	missile.sound:play()
 	self:reset()
 	self.timer = 10
